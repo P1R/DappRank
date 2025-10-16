@@ -21,6 +21,10 @@ contract DappRank is ERC20, ERC20Burnable, ERC20Permit, ERC20Votes, AccessContro
         _grantRole(MINTER_ROLE, minter);
     }
 
+    function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
+        _mint(to, amount);
+    }
+
     // The following functions are overrides required by Solidity.
 
     function _update(address from, address to, uint256 value)
