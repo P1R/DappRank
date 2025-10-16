@@ -23,13 +23,14 @@ import { AccessControl } from "openzeppelin-contracts/contracts/access/AccessCon
     // [ ] IisAlive
     // [ ] sacrifice
 
-contract DappssManager is AccessControl {
+contract DappsManager is AccessControl {
     bytes32 public constant DAO_ROLE = keccak256("DAO_ROLE");
 
     DappRank public drnk;
 
     error CallerNotAdmin(address caller);
     error CallerNotDAO(address caller);
+    error UnknownStatus(Status unknown);
 
     // airdrops
     uint256 public bonus;
@@ -57,14 +58,14 @@ contract DappssManager is AccessControl {
         uint256 expires;
     }
 
-    bytes32[] dapps;
-    address[] fans;
+    bytes32[] public dapps;
+    address[] public fans;
 
-    mapping (bytes32 => Dapp) dappsIndex;
-    mapping (address => Fan) fansIndex;
+    mapping (bytes32 => Dapp) public dappsIndex;
+    mapping (address => Fan) public fansIndex;
 
     constructor(uint _fee, uint _bonus) {
-        drnk = new DappRank(msg.sender, msg.sender);
+        drnk = new DappRank(address(this), address(this));
         fee = _fee;
         bonus = _bonus;
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -77,13 +78,12 @@ contract DappssManager is AccessControl {
             revert CallerNotAdmin(msg.sender);
         }
 
-        for(uint i; i <= actors.length; i++) {
+        for(uint i; i < actors.length; i++) {
             _mint(actors[i], bonus);
         }
     }
 
-    function _mint(address to, uint256 amount) private {
-        require(msg.sender == address(this));
+    function _mint(address to, uint256 amount) internal {
         if(fanExists(to)) {
             drnk.mint(to, amount);
             fansIndex[to].expires = block.timestamp + 4 weeks;
@@ -151,12 +151,27 @@ contract DappssManager is AccessControl {
         delete dappsIndex[name];
     }
 
-    function fanExists(address _fan) public view returns (bool) {
+    function fanIsAlive(address _fan) public view returns (bool) {
         return fansIndex[_fan].expires > block.timestamp;
     }
 
-    function DappNameExists(bytes32 _dapp) public view returns (bool) {
+    function fanExists(address _fan) public view returns (bool) {
+        Fan storage fn = fansIndex[_fan];
+        return (fn.expires == 0 && fn.multiplier == 0);
+    }
+
+    function DappNameIsActive(bytes32 _dapp) public view returns (bool) {
         return dappsIndex[_dapp].status == Status.Active;
+    }
+
+    function DappNameExists(bytes32 _dapp) public view returns (bool) {
+        Dapp storage dp = dappsIndex[_dapp];
+        return(!(bytes(dp.cid).length == 0
+               && dp.fans_score == 0
+               && dp.decentralized_score == 0
+               && dp.total_burned == 0
+               && dp.owner == address(0x0)
+              ));
     }
 
     function getAllFans() external view returns (address[] memory){
@@ -166,5 +181,63 @@ contract DappssManager is AccessControl {
     function getAllDappNames() external view returns (bytes32[] memory){
         return dapps;
     }
-}
 
+    //function getDappInfo(bytes32 _dapp) external view returns(
+    //    string memory cid,
+    //    uint256 fans_score,
+    //    uint256 decentralized_score,
+    //    uint256 total_burned,
+    //    address owner,
+    //    Status status
+    //) {
+    //    return dappsIndex[_dapp];
+    //}
+
+    function getDappInfoStruct(bytes32 _dapp) public view returns(Dapp memory) {
+        require(DappNameExists(_dapp));
+        return dappsIndex[_dapp];
+    }
+
+    function getDappInfo(bytes32 _dapp) public view returns(
+        string memory cid,
+        uint256 fans_score,
+        uint256 decentralized_score,
+        uint256 total_burned,
+        address owner,
+        bytes32 status
+    ) {
+        require(DappNameExists(_dapp));
+        Dapp storage dp = dappsIndex[_dapp];
+        return(
+            dp.cid,
+            dp.fans_score,
+            dp.decentralized_score,
+            dp.total_burned,
+            dp.owner,
+            _mapDappStatusToBytes32(dp.status)
+        );
+    }
+
+    function _mapDappStatusToBytes32(Status status) internal pure returns(bytes32) {
+        if (status == Status.Submitted) {
+            return bytes32("Submitted");
+        } else if (status == Status.Active) {
+            return bytes32("Active");
+        } else if (status == Status.Expired) {
+            return bytes32("Expired");
+        } else if (status == Status.Banned) {
+            return bytes32("Banned");
+        } else
+            revert UnknownStatus(status);
+    }
+
+    function getFanInfo(address _fan) external view returns(uint256, uint256) {
+        Fan storage fanData = fansIndex[_fan];
+        return (fanData.expires, fanData.multiplier);
+    }
+
+    function getFanInfoStruct(address _fan) external view returns(Fan memory) {
+        require(fanExists(_fan));
+        return fansIndex[_fan];
+    }
+}
