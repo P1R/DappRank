@@ -3,9 +3,11 @@ pragma solidity ^0.8.30;
 
 import {Test, console2} from "forge-std/Test.sol";
 import {DappsManager} from "../src-sc/DappsManager.sol";
+import {DappRank} from "../src-sc/DRNK.sol";
 
 contract DappsManagerTest is Test {
     DappsManager public dappsMgr;
+    DappRank public drnkToken;
 
     address nonAdmin = address(0x20);
     address[] testUsers = [ address(0x1),
@@ -19,6 +21,8 @@ contract DappsManagerTest is Test {
 
     function setUp() public {
         dappsMgr = new DappsManager(fee, bonus);
+        // Attach deployed token
+        drnkToken = DappRank(address(dappsMgr.drnk()));
     }
 
     function testGetAllFansIsEmpty() public view {
@@ -161,12 +165,47 @@ contract DappsManagerTest is Test {
         assertEq(dappsMgr.getAllDappNames().length, 0);
     }
 
+    function testBurnTestUsersTokens() public {
+        dappsMgr.demoAirdrop(testUsers);
+        for(uint i; i < testUsers.length; i++) {
+            assertEq(drnkToken.balanceOf(testUsers[i]), bonus);
+        }
+
+        // test burning from ERC20
+        for(uint i; i < testUsers.length; i++) {
+            vm.prank(testUsers[i]);
+            drnkToken.burn(bonus);
+            assertEq(drnkToken.balanceOf(testUsers[i]), 0);
+        }
+
+        // TEST delegated burn
+        dappsMgr.demoAirdrop(testUsers);
+        for(uint i; i < testUsers.length; i++) {
+            assertEq(drnkToken.balanceOf(testUsers[i]), bonus);
+        }
+
+        // Delegate daggTokens from testUsers to dappsMgr
+        for(uint i; i < testUsers.length; i++) {
+            vm.prank(testUsers[i]);
+            drnkToken.approve(address(dappsMgr), bonus);
+            uint256 allowanceAmount = drnkToken.allowance(testUsers[i], address(dappsMgr));
+            assertEq(allowanceAmount, bonus);
+        }
+
+        // test burning from ERC20
+        for(uint i; i < testUsers.length; i++) {
+            vm.prank(testUsers[i]);
+            dappsMgr.burn(bonus);
+            assertEq(drnkToken.balanceOf(testUsers[i]), 0);
+        }
+
+    }
+
+    // ToDo signatures
+    //function testAddandRemovefans() external {}
     //function testVote4Dapps() public {}
     //function testDappsExpire() public {}
-
-
-    //function testFanLifeTime() public {
-    //}
+    //function testFanLifeTime() public {}
 
 
 }

@@ -8,17 +8,17 @@ import { AccessControl } from "openzeppelin-contracts/contracts/access/AccessCon
     // [x] list fans
     // [x] list dapps
     // [x] airdrop actors demo
-    // [x] mint and add fans
+    // [x] mint DRNK
     // [x] registerDapp (payable)
     // [x] updateDappCID
     // [x] removeDapp
     // [x] approveDapp
-    // [ ] burn tokens
+    // [x] burn DRNK
     // [x] banDapp
     // [x] expiredDapp
     // [ ] voteDapp
     // [ ] distributeDRNK
-    // For sprint 3 increment the deflation of ultrasound Model.
+    // For sprint 3 increment the deflation of ultrasound.
     // [ ] transfer condition and expiration
     // [ ] IisAlive
     // [ ] sacrifice
@@ -90,9 +90,23 @@ contract DappsManager is AccessControl {
         } else {
             fans.push(to);
             drnk.mint(to, amount);
+            // welcome bonus
             fansIndex[to] = Fan(bonus, block.timestamp + 4 weeks);
         }
     }
+
+    function burn(uint256 _amount) public {
+        require(drnk.balanceOf(msg.sender) > 0);
+        require(drnk.allowance(msg.sender, address(this)) >= _amount);
+
+        drnk.burnFrom(msg.sender, _amount);
+
+        //if(drnk.balanceOf(msg.sender) == 0) {
+        //    ToDo Remove Fan, must get index out of solidity
+        //     because gas expensive and as parameter.
+        //}
+    }
+
 
     function registerDapp(
         bytes32 name,
@@ -149,6 +163,20 @@ contract DappsManager is AccessControl {
         dapps[index] = dapps[dapps.length - 1];
         dapps.pop();
         delete dappsIndex[name];
+    }
+
+    function removeFan(uint256 index, address fan) public {
+        require(index >= 0 && index < dapps.length, "index is out of fans bounds");
+        require(fans[index] == fan, "index do not match with fan");
+        require(fanExists(fan));
+        require(!fanIsAlive(fan)); //fan is not alive
+        require(msg.sender == fan
+            || hasRole(DEFAULT_ADMIN_ROLE, msg.sender)
+            || hasRole(DAO_ROLE, msg.sender)
+        );
+        fans[index] = fans[fans.length - 1];
+        fans.pop();
+        delete fansIndex[fan];
     }
 
     function fanIsAlive(address _fan) public view returns (bool) {
