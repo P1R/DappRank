@@ -16,11 +16,18 @@ contract DappsManagerTest is Test {
         address(0x4),
         address(0x5)];
 
-    uint256 fee = 100e16;
+    uint256 listingFee = 100e16;
+    uint256 burningFee = 10; // 10%
+    uint256 daoFee = 1; // 1 %
     uint256 bonus = 1000e18;
 
     function setUp() public {
-        dappsMgr = new DappsManager(fee, bonus);
+        dappsMgr = new DappsManager(
+            listingFee,
+            daoFee,
+            burningFee,
+            bonus
+        );
         // Attach deployed token
         drnkToken = DappRank(address(dappsMgr.drnk()));
     }
@@ -72,12 +79,12 @@ contract DappsManagerTest is Test {
 
         //Dapp memory dappSt;
         // First Dapp gets added
-        dappsMgr.registerDapp{value: fee}(dappName, cid);
+        dappsMgr.registerDapp{value: listingFee}(dappName, cid);
         assertEq(dappsMgr.getAllDappNames()[0], dappName);
         // Retrive Dapp
         string memory retCID;
         bytes32 status;
-        (retCID, , , , ,status) = dappsMgr.getDappInfo(dappName);
+        (retCID, , , , , , status) = dappsMgr.getDappInfo(dappName);
         //console2.log("retrived status: ");
         //console2.logBytes32(status);
         //console2.log("retrived cid: ", retCID);
@@ -85,17 +92,17 @@ contract DappsManagerTest is Test {
         assertEq(cid, retCID);
         // Then Dapp gets approved
         dappsMgr.approveDapp(dappName);
-        (retCID, , , , ,status) = dappsMgr.getDappInfo(dappName);
+        (retCID, , , , , , status) = dappsMgr.getDappInfo(dappName);
         assertEq(status, bytes32("Active"));
         assertEq(cid, retCID);
         // After the Dapp gets banned
         dappsMgr.banDapp(dappName);
-        (retCID, , , , ,status) = dappsMgr.getDappInfo(dappName);
+        (retCID, , , , , , status) = dappsMgr.getDappInfo(dappName);
         assertEq(status, bytes32("Banned"));
         assertEq(cid, retCID);
         // Then Dapp gets approved Again
         dappsMgr.approveDapp(dappName);
-        (retCID, , , , ,status) = dappsMgr.getDappInfo(dappName);
+        (retCID, , , , , , status) = dappsMgr.getDappInfo(dappName);
         assertEq(status, bytes32("Active"));
         assertEq(cid, retCID);
         // Remove the Dapp
@@ -108,12 +115,12 @@ contract DappsManagerTest is Test {
 
         //Dapp memory dappSt;
         // First Dapp gets added
-        dappsMgr.registerDapp{value: fee}(dappName, cid);
+        dappsMgr.registerDapp{value: listingFee}(dappName, cid);
         assertEq(dappsMgr.getAllDappNames()[0], dappName);
         // Retrive Dapp
         string memory retCID;
         bytes32 status;
-        (retCID, , , , ,status) = dappsMgr.getDappInfo(dappName);
+        (retCID, , , , , , status) = dappsMgr.getDappInfo(dappName);
         assertEq(status, bytes32("Submitted"));
         assertEq(cid, retCID);
         // Remove Dapp knowing the index...
@@ -141,11 +148,11 @@ contract DappsManagerTest is Test {
         bytes32 status;
 
         for(uint i; i < dappNames.length; i++) {
-            dappsMgr.registerDapp{value: fee}(dappNames[i], cids[i]);
+            dappsMgr.registerDapp{value: listingFee}(dappNames[i], cids[i]);
         }
 
         for(uint i; i < dappNames.length; i++) {
-            (retCID, , , , ,status) = dappsMgr.getDappInfo(dappNames[i]);
+            (retCID, , , , , , status) = dappsMgr.getDappInfo(dappNames[i]);
             assertEq(status, bytes32("Submitted"));
             assertEq(retCID, cids[i]);
         }

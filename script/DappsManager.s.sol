@@ -6,7 +6,9 @@ import {DappsManager} from "../src-sc/DappsManager.sol";
 
 contract DappsManagerScript is Script {
     DappsManager public dappsMgr;
-    uint256 fee = 100e16;
+    uint256 listingFee = 100e16;
+    uint256 burningFee = 10; // 10%
+    uint256 daoFee = 1; // 1 %
     uint256 bonus = 1000e18;
 
     function setUp() public {}
@@ -14,7 +16,12 @@ contract DappsManagerScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        dappsMgr = new DappsManager(fee, bonus);
+        dappsMgr = new DappsManager(
+            listingFee,
+            daoFee,
+            burningFee,
+            bonus
+        );
 
         vm.stopBroadcast();
     }

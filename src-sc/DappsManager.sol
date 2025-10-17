@@ -34,8 +34,12 @@ contract DappsManager is AccessControl {
 
     // airdrops
     uint256 public bonus;
-    // fee
-    uint256 public fee;
+    // listingFee
+    uint256 public listingFee;
+    // DAOFee
+    uint256 public DAOFee;
+    // burn fee % to make it ultrasound will be fixable in the future
+    uint256 public burnFee;
 
     enum Status {
         Submitted,
@@ -46,16 +50,26 @@ contract DappsManager is AccessControl {
 
     struct Dapp {
         string cid;
-        uint256 fans_score;
-        uint256 decentralized_score;
-        uint256 total_burned;
+        uint256 rate; // Dr = Dapp rate
+        uint256 weight_votes_sum; // sum(Vi x sqrt(Ti)) see WP.md
+        uint256 weight_total_sum; // sum(sqrt(Ti)) see WP.md
+        uint256 balance;
+        uint256 burned;
         address owner;
         Status status;
+        mapping (address => Vote) votes;
     }
 
     struct Fan {
         uint256 multiplier;
         uint256 expires;
+    }
+
+    struct Vote {
+        bytes32 dapp;
+        uint256 vote_rate;  // Vi must be between 0 and 100
+        uint256 fan_weight; // Wi = sqrt(Ti)
+        uint256 timestamp;
     }
 
     bytes32[] public dapps;
@@ -64,9 +78,11 @@ contract DappsManager is AccessControl {
     mapping (bytes32 => Dapp) public dappsIndex;
     mapping (address => Fan) public fansIndex;
 
-    constructor(uint _fee, uint _bonus) {
+    constructor(uint _listingFee, uint _daoFee, uint _burnFee, uint _bonus) {
         drnk = new DappRank(address(this), address(this));
-        fee = _fee;
+        listingFee = _listingFee;
+        DAOFee = _daoFee;
+        burnFee = _burnFee;
         bonus = _bonus;
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         // to be updated with an address as the admin role
@@ -102,7 +118,7 @@ contract DappsManager is AccessControl {
         drnk.burnFrom(msg.sender, _amount);
 
         //if(drnk.balanceOf(msg.sender) == 0) {
-        //    ToDo Remove Fan, must get index out of solidity
+        //    ToDo Remove Fan, might get index on iters out of solidity ?
         //     because gas expensive and as parameter.
         //}
     }
@@ -112,16 +128,29 @@ contract DappsManager is AccessControl {
         bytes32 name,
         string memory cid
     ) public payable {
-        require(msg.value >= fee, "Error: listing fee uncovered");
+        require(msg.value >= listingFee, "Error: listing fee uncovered");
         require(!DappNameExists(name));
-        dappsIndex[name]= Dapp(
-            cid,
-            0,
-            0,
-            0,
-            msg.sender,
-            Status.Submitted
-        );
+        // solidity gimnastics...
+        Dapp storage dp = dappsIndex[name];
+        dp.cid = cid;
+        dp.rate = 0;
+        dp.weight_votes_sum = 0;
+        dp.weight_total_sum = 0;
+        dp.balance = 0;
+        dp.burned = 0;
+        dp.owner = msg.sender;
+        dp.status = Status.Submitted;
+        // not sure if previous will work...
+        // dappsIndex[name]= Dapp({
+        // cid : cid,
+        // rate : 0,
+        // weight_votes_sum : 0,
+        // weight_total_sum : 0,
+        // balance : 0,
+        // burned : 0,
+        // owner : msg.sender,
+        // status : Status.Submitted
+        // });
         dapps.push(name);
         _mint(msg.sender, 10 * bonus);
     }
@@ -149,6 +178,10 @@ contract DappsManager is AccessControl {
         require(DappNameExists(name));
         require(msg.sender == dappsIndex[name].owner);
         dappsIndex[name].cid = cid;
+    }
+
+    function rateDapp(bytes32 name, uint256 amount) external {
+
     }
 
     // @notice: index should be compute externally using getAllDapps
@@ -195,9 +228,11 @@ contract DappsManager is AccessControl {
     function DappNameExists(bytes32 _dapp) public view returns (bool) {
         Dapp storage dp = dappsIndex[_dapp];
         return(!(bytes(dp.cid).length == 0
-               && dp.fans_score == 0
-               && dp.decentralized_score == 0
-               && dp.total_burned == 0
+               && dp.rate == 0
+               && dp.weight_votes_sum == 0
+               && dp.weight_total_sum == 0
+               && dp.balance == 0
+               && dp.burned == 0
                && dp.owner == address(0x0)
               ));
     }
@@ -210,27 +245,18 @@ contract DappsManager is AccessControl {
         return dapps;
     }
 
-    //function getDappInfo(bytes32 _dapp) external view returns(
-    //    string memory cid,
-    //    uint256 fans_score,
-    //    uint256 decentralized_score,
-    //    uint256 total_burned,
-    //    address owner,
-    //    Status status
-    //) {
+    // ToDo check with the Solidity Gimnastics storage how to handle
+    //function getDappInfoStruct(bytes32 _dapp) public view returns(Dapp calldata) {
+    //    require(DappNameExists(_dapp));
     //    return dappsIndex[_dapp];
     //}
 
-    function getDappInfoStruct(bytes32 _dapp) public view returns(Dapp memory) {
-        require(DappNameExists(_dapp));
-        return dappsIndex[_dapp];
-    }
-
     function getDappInfo(bytes32 _dapp) public view returns(
         string memory cid,
-        uint256 fans_score,
-        uint256 decentralized_score,
-        uint256 total_burned,
+        uint256 rate,
+        uint256 weight_votes_sum,
+        uint256 weight_total_sum,
+        uint256 burned,
         address owner,
         bytes32 status
     ) {
@@ -238,9 +264,10 @@ contract DappsManager is AccessControl {
         Dapp storage dp = dappsIndex[_dapp];
         return(
             dp.cid,
-            dp.fans_score,
-            dp.decentralized_score,
-            dp.total_burned,
+            dp.rate,
+            dp.weight_votes_sum,
+            dp.weight_total_sum,
+            dp.burned,
             dp.owner,
             _mapDappStatusToBytes32(dp.status)
         );
