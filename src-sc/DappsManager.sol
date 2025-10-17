@@ -139,8 +139,8 @@ contract DappsManager is AccessControl {
 
     // @notice: index should be compute externally using getAllDapps
     function removeDapp(uint256 index, bytes32 name) public {
-        require(index < dapps.length, "index is out of dapps bounds");
-        require(dapps[index] == name);
+        require(index >= 0 && index < dapps.length, "index is out of dapps bounds");
+        require(dapps[index] == name, "index do not match with dapp name");
         require(DappNameExists(name));
         require(msg.sender == dappsIndex[name].owner
             || hasRole(DEFAULT_ADMIN_ROLE, msg.sender)

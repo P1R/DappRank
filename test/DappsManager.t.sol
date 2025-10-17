@@ -117,13 +117,56 @@ contract DappsManagerTest is Test {
         assertEq(dappsMgr.getAllDappNames().length, 0);
     }
 
-    //function testAddandRemoveDappMany() external {
-    //}
+    function testAddandRemoveDappMany() external {
+        bytes32[5] memory dappNames = [
+            bytes32("dapp1"),
+            bytes32("dapp2"),
+            bytes32("dapp3"),
+            bytes32("dapp4"),
+            bytes32("dapp5")
+        ];
+        string[5] memory cids = [
+            "QmNewCID1",
+            "QmNewCID2",
+            "QmNewCID3",
+            "QmNewCID4",
+            "QmNewCID5"
+        ];
+        // Retrive Dapp
+        string memory retCID;
+        bytes32 status;
+
+        for(uint i; i < dappNames.length; i++) {
+            dappsMgr.registerDapp{value: fee}(dappNames[i], cids[i]);
+        }
+
+        for(uint i; i < dappNames.length; i++) {
+            (retCID, , , , ,status) = dappsMgr.getDappInfo(dappNames[i]);
+            assertEq(status, bytes32("Submitted"));
+            assertEq(retCID, cids[i]);
+        }
+
+
+        // remove all (ToDo, fix math looks dirty)
+        bytes32[] memory dappN = dappsMgr.getAllDappNames();
+        for(uint i = dappN.length; i > 0; i--) {
+            //console2.log(i-1);
+            console2.log(dappsMgr.DappNameExists(dappNames[i-1]));
+            dappsMgr.removeDapp(i-1, dappNames[i-1]);
+            console2.logBytes32(dappNames[i-1]);
+            console2.log("removed dappname:",string(abi.encodePacked(dappNames[i-1])));
+            console2.log(dappsMgr.DappNameExists(dappNames[i-1]));
+            dappN = dappsMgr.getAllDappNames();
+        }
+        assertEq(dappsMgr.getAllDappNames().length, 0);
+    }
+
+    //function testVote4Dapps() public {}
+    //function testDappsExpire() public {}
+
 
     //function testFanLifeTime() public {
     //}
 
-    //function testVote4Dapps() public {}
-    //function testDappsExpire() public {}
 
 }
