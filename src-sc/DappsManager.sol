@@ -1,27 +1,28 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.30;
 
-import { DappRank } from "./DRNK.sol";
-import { AccessControl } from "openzeppelin-contracts/contracts/access/AccessControl.sol";
+import {DappRank} from "./DRNK.sol";
+import {AccessControl} from "openzeppelin-contracts/contracts/access/AccessControl.sol";
+import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 
-    // ToDo
-    // [x] list fans
-    // [x] list dapps
-    // [x] airdrop actors demo
-    // [x] mint DRNK
-    // [x] registerDapp (payable)
-    // [x] updateDappCID
-    // [x] removeDapp
-    // [x] approveDapp
-    // [x] burn DRNK
-    // [x] banDapp
-    // [x] expiredDapp
-    // [ ] voteDapp
-    // [ ] distributeDRNK
-    // For sprint 3 increment the deflation of ultrasound.
-    // [ ] transfer condition and expiration
-    // [ ] IisAlive
-    // [ ] sacrifice
+// ToDo
+// [x] list fans
+// [x] list dapps
+// [x] airdrop actors demo
+// [x] mint DRNK
+// [x] registerDapp (payable)
+// [x] updateDappCID
+// [x] removeDapp
+// [x] approveDapp
+// [x] burn DRNK
+// [x] banDapp
+// [x] expiredDapp
+// [ ] voteDapp
+// [ ] distributeDRNK
+// For sprint 3 increment the deflation of ultrasound.
+// [ ] transfer condition and expiration
+// [ ] IisAlive
+// [ ] sacrifice
 
 contract DappsManager is AccessControl {
     bytes32 public constant DAO_ROLE = keccak256("DAO_ROLE");
@@ -36,10 +37,11 @@ contract DappsManager is AccessControl {
     uint256 public bonus;
     // listingFee
     uint256 public listingFee;
-    // DAOFee
+    // DAOFee fixed to 1% on vote in bp
     uint256 public DAOFee;
+    address public DAOAddrss;
     // burn fee % to make it ultrasound will be fixable in the future
-    uint256 public burnFee;
+    uint256 public burnFee; // bp
 
     enum Status {
         Submitted,
@@ -57,7 +59,7 @@ contract DappsManager is AccessControl {
         uint256 burned;
         address owner;
         Status status;
-        mapping (address => Vote) votes;
+        mapping(address => Vote) votes;
     }
 
     struct Fan {
@@ -66,8 +68,7 @@ contract DappsManager is AccessControl {
     }
 
     struct Vote {
-        bytes32 dapp;
-        uint256 vote_rate;  // Vi must be between 0 and 100
+        uint256 vote_rate; // Vi must be between 0 and 100
         uint256 fan_weight; // Wi = sqrt(Ti)
         uint256 timestamp;
     }
@@ -75,15 +76,16 @@ contract DappsManager is AccessControl {
     bytes32[] public dapps;
     address[] public fans;
 
-    mapping (bytes32 => Dapp) public dappsIndex;
-    mapping (address => Fan) public fansIndex;
+    mapping(bytes32 => Dapp) public dappsIndex;
+    mapping(address => Fan) public fansIndex;
 
     constructor(uint _listingFee, uint _daoFee, uint _burnFee, uint _bonus) {
         drnk = new DappRank(address(this), address(this));
-        listingFee = _listingFee;
-        DAOFee = _daoFee;
-        burnFee = _burnFee;
+        listingFee = _listingFee; // fixed price updateable
+        DAOFee = _daoFee;   // ToDo: based on ultrasound model
+        burnFee = _burnFee; // ToDo: based on ultrasound model
         bonus = _bonus;
+        DAOAddrss = msg.sender; // temporal patch should be parameter...
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         // to be updated with an address as the admin role
         _grantRole(DAO_ROLE, msg.sender);
@@ -140,31 +142,21 @@ contract DappsManager is AccessControl {
         dp.burned = 0;
         dp.owner = msg.sender;
         dp.status = Status.Submitted;
-        // not sure if previous will work...
-        // dappsIndex[name]= Dapp({
-        // cid : cid,
-        // rate : 0,
-        // weight_votes_sum : 0,
-        // weight_total_sum : 0,
-        // balance : 0,
-        // burned : 0,
-        // owner : msg.sender,
-        // status : Status.Submitted
-        // });
+
         dapps.push(name);
         _mint(msg.sender, 10 * bonus);
     }
 
-    function approveDapp(bytes32 name) external {
-        require(DappNameExists(name));
+    function approveDapp(bytes32 _name) external {
+        require(DappNameExists(_name));
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(DAO_ROLE, msg.sender));
-        dappsIndex[name].status = Status.Active;
+        dappsIndex[_name].status = Status.Active;
     }
 
-    function banDapp(bytes32 name) external {
-        require(DappNameExists(name));
+    function banDapp(bytes32 _name) external {
+        require(DappNameExists(_name));
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(DAO_ROLE, msg.sender));
-        dappsIndex[name].status = Status.Banned;
+        dappsIndex[_name].status = Status.Banned;
     }
 
     //function expiredDapp(bytes32 name) external {
@@ -237,6 +229,54 @@ contract DappsManager is AccessControl {
               ));
     }
 
+    function voteDapp(bytes32 _name, uint _amount, uint _rate) external {
+        require(DappNameExists(_name));
+        require(drnk.balanceOf(msg.sender) > 0);
+        require(drnk.allowance(msg.sender, address(this)) >= _amount);
+        require(_rate > 0 && _rate <= 100);
+        Fan memory voter = fansIndex[msg.sender];
+        require(voter.expires > block.timestamp, "Voter is not a valid Fan");
+
+        Dapp storage dapp = dappsIndex[_name];
+        require(dapp.status == Status.Active, "Dapp is not active");
+
+        // READY TO VOTE! ;)
+
+        // increase lifetime and multiplier of Voter(fan) for the future game theory
+        fansIndex[msg.sender].expires = block.timestamp + 4 weeks;
+        fansIndex[msg.sender].multiplier += 1;
+
+        //Add Vote struct to Dapp for the voter
+        Vote storage vote = dapp.votes[msg.sender];
+        vote.vote_rate = _rate;
+        vote.fan_weight = Math.sqrt(_amount, Math.Rounding.Ceil);
+        vote.timestamp = block.timestamp;
+
+        // Square Root Weighted Voting (SRWV)
+        dapp.weight_votes_sum += (vote.vote_rate * vote.fan_weight);
+        dapp.weight_total_sum += vote.fan_weight;
+        dapp.rate = dapp.weight_votes_sum / dapp.weight_total_sum;
+
+        // Distribution
+        //drnk.transferFrom(msg.sender, address(this), (_amount * DAOFee)); //charged on cashout
+        drnk.transferFrom(msg.sender, address(this), _amount);
+        drnk.approve(address(this), (_amount * burnFee / 10_000));
+        drnk.burn(_amount * burnFee / 10_000);
+        dapp.burned += (_amount * burnFee / 10_000);
+        dapp.balance += _amount -(_amount * burnFee / 10_000) -(_amount * DAOFee / 10_000);
+    }
+
+    function dappCashOut(bytes32 _name, uint _amount) external {
+      require(DappNameExists(_name));
+      Dapp storage dapp = dappsIndex[_name];
+      require(dapp.status == Status.Active, "Dapp is not active");
+      require(dapp.owner == msg.sender, "Ups... You are not the dapp owner");
+
+      drnk.approve(msg.sender, _amount - (_amount * DAOFee / 10_000));
+      drnk.transfer(msg.sender, _amount - (_amount * DAOFee / 10_000)); //charged on cashout
+      drnk.transfer(DAOAddrss, _amount * DAOFee / 10_000); //charged on cashout
+    }
+
     function getAllFans() external view returns (address[] memory){
         return fans;
     }
@@ -256,6 +296,7 @@ contract DappsManager is AccessControl {
         uint256 rate,
         uint256 weight_votes_sum,
         uint256 weight_total_sum,
+        uint256 balance,
         uint256 burned,
         address owner,
         bytes32 status
@@ -267,6 +308,7 @@ contract DappsManager is AccessControl {
             dp.rate,
             dp.weight_votes_sum,
             dp.weight_total_sum,
+            dp.balance,
             dp.burned,
             dp.owner,
             _mapDappStatusToBytes32(dp.status)
