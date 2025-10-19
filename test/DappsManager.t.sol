@@ -319,6 +319,17 @@ contract DappsManagerTest is Test {
         assertEq(drnkToken.balanceOf(address(this)), 22e18);
     }
 
+    function testTopUp() public {
+        uint topUpAmount = 1 ether;
+        assertEq(address(testUsers[0]).balance, 0 ether);
+        vm.prank(testUsers[0]);
+        vm.deal(testUsers[0], 1.1 ether);
+        dappsMgr.buyDRNK{value: topUpAmount}();
+        assertEq(address(testUsers[0]).balance, 0.1 ether);
+        //console2.log(daagToken.balanceOf(testUsers[0])/1e18);
+        assertEq(drnkToken.balanceOf(testUsers[0]), 1000e18);
+    }
+
     // ToDo signatures
     //function testAddandRemovefans() external {}
     //function testDappsExpire() public {}

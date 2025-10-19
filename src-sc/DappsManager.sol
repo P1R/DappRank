@@ -17,8 +17,8 @@ import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 // [x] burn DRNK
 // [x] banDapp
 // [x] expiredDapp
-// [ ] voteDapp
-// [ ] distributeDRNK
+// [x] voteDapp
+// [x] distribute DRNK
 // For sprint 3 increment the deflation of ultrasound.
 // [ ] transfer condition and expiration
 // [ ] IisAlive
@@ -43,6 +43,10 @@ contract DappsManager is AccessControl {
     // burn fee % to make it ultrasound will be fixable in the future
     uint256 public burnFee; // bp
 
+    // temporal for getting tokens to test Demo
+    uint256 public topUpExpires;
+    uint256 public topUpMin = 0.001 ether;
+
     enum Status {
         Submitted,
         Active,
@@ -59,7 +63,7 @@ contract DappsManager is AccessControl {
         uint256 burned;
         address owner;
         Status status;
-        mapping(address => Vote) votes;
+        mapping (address => Vote) votes;
     }
 
     struct Fan {
@@ -68,7 +72,7 @@ contract DappsManager is AccessControl {
     }
 
     struct Vote {
-        uint256 vote_rate; // Vi must be between 0 and 100
+        uint256 vote_rate;  // Vi must be between 0 and 100
         uint256 fan_weight; // Wi = sqrt(Ti)
         uint256 timestamp;
     }
@@ -76,8 +80,8 @@ contract DappsManager is AccessControl {
     bytes32[] public dapps;
     address[] public fans;
 
-    mapping(bytes32 => Dapp) public dappsIndex;
-    mapping(address => Fan) public fansIndex;
+    mapping (bytes32 => Dapp) public dappsIndex;
+    mapping (address => Fan) public fansIndex;
 
     constructor(uint _listingFee, uint _daoFee, uint _burnFee, uint _bonus) {
         drnk = new DappRank(address(this), address(this));
@@ -89,6 +93,7 @@ contract DappsManager is AccessControl {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         // to be updated with an address as the admin role
         _grantRole(DAO_ROLE, msg.sender);
+        topUpExpires = block.timestamp + 12 weeks;
     }
 
     function demoAirdrop(address[] calldata actors) public {
@@ -99,6 +104,17 @@ contract DappsManager is AccessControl {
         for(uint i; i < actors.length; i++) {
             _mint(actors[i], bonus);
         }
+    }
+
+    function buyDRNK() public payable {
+        require(msg.value >= topUpMin, "Error: minmum price uncovered");
+        require(block.timestamp <= topUpExpires);
+        if(fanExists(msg.sender)) {
+            _mint(msg.sender, fansIndex[msg.sender].multiplier * msg.value * 1000);
+        } else {
+            _mint(msg.sender, msg.value * 1000);
+        }
+
     }
 
     function _mint(address to, uint256 amount) internal {
@@ -210,7 +226,7 @@ contract DappsManager is AccessControl {
 
     function fanExists(address _fan) public view returns (bool) {
         Fan storage fn = fansIndex[_fan];
-        return (fn.expires == 0 && fn.multiplier == 0);
+        return (!(fn.expires == 0 && fn.multiplier == 0));
     }
 
     function DappNameIsActive(bytes32 _dapp) public view returns (bool) {
