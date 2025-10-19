@@ -13,10 +13,7 @@ import {Nonces} from "@openzeppelin/contracts/utils/Nonces.sol";
 contract DappRank is ERC20, ERC20Burnable, ERC20Permit, ERC20Votes, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    constructor(address defaultAdmin, address minter)
-        ERC20("DappRank", "DRNK")
-        ERC20Permit("DappRank")
-    {
+    constructor(address defaultAdmin, address minter) ERC20("DappRank", "DRNK") ERC20Permit("DappRank") {
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _grantRole(MINTER_ROLE, minter);
     }
@@ -27,19 +24,11 @@ contract DappRank is ERC20, ERC20Burnable, ERC20Permit, ERC20Votes, AccessContro
 
     // The following functions are overrides required by Solidity.
 
-    function _update(address from, address to, uint256 value)
-        internal
-        override(ERC20, ERC20Votes)
-    {
+    function _update(address from, address to, uint256 value) internal override(ERC20, ERC20Votes) {
         super._update(from, to, value);
     }
 
-    function nonces(address owner)
-        public
-        view
-        override(ERC20Permit, Nonces)
-        returns (uint256)
-    {
+    function nonces(address owner) public view override(ERC20Permit, Nonces) returns (uint256) {
         return super.nonces(owner);
     }
 }

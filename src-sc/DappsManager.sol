@@ -63,7 +63,7 @@ contract DappsManager is AccessControl {
         uint256 burned;
         address owner;
         Status status;
-        mapping (address => Vote) votes;
+        mapping(address => Vote) votes;
     }
 
     struct Fan {
@@ -72,7 +72,7 @@ contract DappsManager is AccessControl {
     }
 
     struct Vote {
-        uint256 vote_rate;  // Vi must be between 0 and 100
+        uint256 vote_rate; // Vi must be between 0 and 100
         uint256 fan_weight; // Wi = sqrt(Ti)
         uint256 timestamp;
     }
@@ -80,13 +80,13 @@ contract DappsManager is AccessControl {
     bytes32[] public dapps;
     address[] public fans;
 
-    mapping (bytes32 => Dapp) public dappsIndex;
-    mapping (address => Fan) public fansIndex;
+    mapping(bytes32 => Dapp) public dappsIndex;
+    mapping(address => Fan) public fansIndex;
 
-    constructor(uint _listingFee, uint _daoFee, uint _burnFee, uint _bonus) {
+    constructor(uint256 _listingFee, uint256 _daoFee, uint256 _burnFee, uint256 _bonus) {
         drnk = new DappRank(address(this), address(this));
         listingFee = _listingFee; // fixed price updateable
-        DAOFee = _daoFee;   // ToDo: based on ultrasound model
+        DAOFee = _daoFee; // ToDo: based on ultrasound model
         burnFee = _burnFee; // ToDo: based on ultrasound model
         bonus = _bonus;
         DAOAddrss = msg.sender; // temporal patch should be parameter...
@@ -101,7 +101,7 @@ contract DappsManager is AccessControl {
             revert CallerNotAdmin(msg.sender);
         }
 
-        for(uint i; i < actors.length; i++) {
+        for (uint256 i; i < actors.length; i++) {
             _mint(actors[i], bonus);
         }
     }
@@ -109,16 +109,15 @@ contract DappsManager is AccessControl {
     function buyDRNK() public payable {
         require(msg.value >= topUpMin, "Error: minmum price uncovered");
         require(block.timestamp <= topUpExpires);
-        if(fanExists(msg.sender)) {
+        if (fanExists(msg.sender)) {
             _mint(msg.sender, fansIndex[msg.sender].multiplier * msg.value * 1000);
         } else {
             _mint(msg.sender, msg.value * 1000);
         }
-
     }
 
     function _mint(address to, uint256 amount) internal {
-        if(fanExists(to)) {
+        if (fanExists(to)) {
             drnk.mint(to, amount);
             fansIndex[to].expires = block.timestamp + 4 weeks;
         } else {
@@ -141,11 +140,7 @@ contract DappsManager is AccessControl {
         //}
     }
 
-
-    function registerDapp(
-        bytes32 name,
-        string memory cid
-    ) public payable {
+    function registerDapp(bytes32 name, string memory cid) public payable {
         require(msg.value >= listingFee, "Error: listing fee uncovered");
         require(!DappNameExists(name));
         // solidity gimnastics...
@@ -188,18 +183,16 @@ contract DappsManager is AccessControl {
         dappsIndex[name].cid = cid;
     }
 
-    function rateDapp(bytes32 name, uint256 amount) external {
-
-    }
+    function rateDapp(bytes32 name, uint256 amount) external {}
 
     // @notice: index should be compute externally using getAllDapps
     function removeDapp(uint256 index, bytes32 name) public {
         require(index >= 0 && index < dapps.length, "index is out of dapps bounds");
         require(dapps[index] == name, "index do not match with dapp name");
         require(DappNameExists(name));
-        require(msg.sender == dappsIndex[name].owner
-            || hasRole(DEFAULT_ADMIN_ROLE, msg.sender)
-            || hasRole(DAO_ROLE, msg.sender)
+        require(
+            msg.sender == dappsIndex[name].owner || hasRole(DEFAULT_ADMIN_ROLE, msg.sender)
+                || hasRole(DAO_ROLE, msg.sender)
         );
         dapps[index] = dapps[dapps.length - 1];
         dapps.pop();
@@ -211,10 +204,7 @@ contract DappsManager is AccessControl {
         require(fans[index] == fan, "index do not match with fan");
         require(fanExists(fan));
         require(!fanIsAlive(fan)); //fan is not alive
-        require(msg.sender == fan
-            || hasRole(DEFAULT_ADMIN_ROLE, msg.sender)
-            || hasRole(DAO_ROLE, msg.sender)
-        );
+        require(msg.sender == fan || hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(DAO_ROLE, msg.sender));
         fans[index] = fans[fans.length - 1];
         fans.pop();
         delete fansIndex[fan];
@@ -235,17 +225,15 @@ contract DappsManager is AccessControl {
 
     function DappNameExists(bytes32 _dapp) public view returns (bool) {
         Dapp storage dp = dappsIndex[_dapp];
-        return(!(bytes(dp.cid).length == 0
-               && dp.rate == 0
-               && dp.weight_votes_sum == 0
-               && dp.weight_total_sum == 0
-               && dp.balance == 0
-               && dp.burned == 0
-               && dp.owner == address(0x0)
-              ));
+        return (
+            !(
+                bytes(dp.cid).length == 0 && dp.rate == 0 && dp.weight_votes_sum == 0 && dp.weight_total_sum == 0
+                    && dp.balance == 0 && dp.burned == 0 && dp.owner == address(0x0)
+            )
+        );
     }
 
-    function voteDapp(bytes32 _name, uint _amount, uint _rate) external {
+    function voteDapp(bytes32 _name, uint256 _amount, uint256 _rate) external {
         require(DappNameExists(_name));
         require(drnk.balanceOf(msg.sender) > 0);
         require(drnk.allowance(msg.sender, address(this)) >= _amount);
@@ -279,25 +267,25 @@ contract DappsManager is AccessControl {
         drnk.approve(address(this), (_amount * burnFee / 10_000));
         drnk.burn(_amount * burnFee / 10_000);
         dapp.burned += (_amount * burnFee / 10_000);
-        dapp.balance += _amount -(_amount * burnFee / 10_000) -(_amount * DAOFee / 10_000);
+        dapp.balance += _amount - (_amount * burnFee / 10_000) - (_amount * DAOFee / 10_000);
     }
 
-    function dappCashOut(bytes32 _name, uint _amount) external {
-      require(DappNameExists(_name));
-      Dapp storage dapp = dappsIndex[_name];
-      require(dapp.status == Status.Active, "Dapp is not active");
-      require(dapp.owner == msg.sender, "Ups... You are not the dapp owner");
+    function dappCashOut(bytes32 _name, uint256 _amount) external {
+        require(DappNameExists(_name));
+        Dapp storage dapp = dappsIndex[_name];
+        require(dapp.status == Status.Active, "Dapp is not active");
+        require(dapp.owner == msg.sender, "Ups... You are not the dapp owner");
 
-      drnk.approve(msg.sender, _amount - (_amount * DAOFee / 10_000));
-      drnk.transfer(msg.sender, _amount - (_amount * DAOFee / 10_000)); //charged on cashout
-      drnk.transfer(DAOAddrss, _amount * DAOFee / 10_000); //charged on cashout
+        drnk.approve(msg.sender, _amount - (_amount * DAOFee / 10_000));
+        drnk.transfer(msg.sender, _amount - (_amount * DAOFee / 10_000)); //charged on cashout
+        drnk.transfer(DAOAddrss, _amount * DAOFee / 10_000); //charged on cashout
     }
 
-    function getAllFans() external view returns (address[] memory){
+    function getAllFans() external view returns (address[] memory) {
         return fans;
     }
 
-    function getAllDappNames() external view returns (bytes32[] memory){
+    function getAllDappNames() external view returns (bytes32[] memory) {
         return dapps;
     }
 
@@ -307,19 +295,23 @@ contract DappsManager is AccessControl {
     //    return dappsIndex[_dapp];
     //}
 
-    function getDappInfo(bytes32 _dapp) public view returns(
-        string memory cid,
-        uint256 rate,
-        uint256 weight_votes_sum,
-        uint256 weight_total_sum,
-        uint256 balance,
-        uint256 burned,
-        address owner,
-        bytes32 status
-    ) {
+    function getDappInfo(bytes32 _dapp)
+        public
+        view
+        returns (
+            string memory cid,
+            uint256 rate,
+            uint256 weight_votes_sum,
+            uint256 weight_total_sum,
+            uint256 balance,
+            uint256 burned,
+            address owner,
+            bytes32 status
+        )
+    {
         require(DappNameExists(_dapp));
         Dapp storage dp = dappsIndex[_dapp];
-        return(
+        return (
             dp.cid,
             dp.rate,
             dp.weight_votes_sum,
@@ -331,7 +323,7 @@ contract DappsManager is AccessControl {
         );
     }
 
-    function _mapDappStatusToBytes32(Status status) internal pure returns(bytes32) {
+    function _mapDappStatusToBytes32(Status status) internal pure returns (bytes32) {
         if (status == Status.Submitted) {
             return bytes32("Submitted");
         } else if (status == Status.Active) {
@@ -340,16 +332,17 @@ contract DappsManager is AccessControl {
             return bytes32("Expired");
         } else if (status == Status.Banned) {
             return bytes32("Banned");
-        } else
+        } else {
             revert UnknownStatus(status);
+        }
     }
 
-    function getFanInfo(address _fan) external view returns(uint256, uint256) {
+    function getFanInfo(address _fan) external view returns (uint256, uint256) {
         Fan storage fanData = fansIndex[_fan];
         return (fanData.expires, fanData.multiplier);
     }
 
-    function getFanInfoStruct(address _fan) external view returns(Fan memory) {
+    function getFanInfoStruct(address _fan) external view returns (Fan memory) {
         require(fanExists(_fan));
         return fansIndex[_fan];
     }

@@ -28,12 +28,7 @@ contract DappsManagerScript is Script {
         //vm.startBroadcast(deployerPrivateKey);
         vm.startBroadcast();
 
-        dappsMgr = new DappsManager(
-            listingFee,
-            daoFee,
-            burningFee,
-            bonus
-        );
+        dappsMgr = new DappsManager(listingFee, daoFee, burningFee, bonus);
         // Attach deployed token
         drnkToken = DappRank(address(dappsMgr.drnk()));
         console.log("-----------------------------------------------------");
