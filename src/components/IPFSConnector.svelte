@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte';
   import { getHelia } from '../lib/helia.js';
-  import { helia } from '../stores/helia.js';
 
   let file;
   let cid;
@@ -12,9 +11,9 @@
   });
 
   async function uploadToIPFS() {
-    if (file && $helia) {
+    if (file && heliaInstance) {
       const fileBytes = new Uint8Array(await file.arrayBuffer());
-      cid = await $helia.fs.addBytes(fileBytes);
+      cid = await heliaInstance.fs.addBytes(fileBytes);
       console.log('Uploaded to IPFS with CID:', cid.toString());
     }
   }
@@ -22,10 +21,9 @@
 
 <div>
   <input type="file" on:change={(e) => (file = e.target.files[0])} />
-  <button on:click={uploadToIPFS} disabled={!$helia || !file}>
+  <button on:click={uploadToIPFS} disabled={!heliaInstance || !file}>
     Upload to IPFS
   </button>
-
   {#if cid}
     <p>File uploaded! CID: {cid.toString()}</p>
   {/if}
