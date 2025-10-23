@@ -1,5 +1,38 @@
 # DappRank
 
+## Install requirements
+
+* bun
+* npm
+* foundry
+* git
+
+> Note: tested on linux
+
+## Install
+
+```shell
+$ git clone https://github.com/P1R/DappRank.git
+```
+```shell
+$ cd DappRank
+```
+install frontend requirements
+```shell
+$ npm install
+```
+
+## Frontend Development & Deployment
+
+run the development mode
+```shell
+$ bun run dev --open
+```
+
+to host the site use either fleek, piñata or nft.storage. Optionaly you can setup
+your own kubo/helia ipfs instance as public service and gateway and there pin
+the website.
+
 ## Foundry Usage
 
 ### Build
