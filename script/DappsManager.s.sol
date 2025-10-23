@@ -32,7 +32,7 @@ contract DappsManagerScript is Script {
         // Attach deployed token
         drnkToken = DappRank(address(dappsMgr.drnk()));
         console.log("-----------------------------------------------------");
-        console.log("Dapps Indexer contract address is: ", address(dappsMgr));
+        console.log("Dapps contract address is: ", address(dappsMgr));
         console.log("DRNK Token contract address is: ", address(address(dappsMgr.drnk())));
 
         vm.stopBroadcast();
