@@ -1,26 +1,10 @@
 import { ethers } from 'ethers';
-
-const DappsManagerABI = [
-  "function drnk() view returns (address)",
-  "function registerDapp(bytes32 name, string cid)",
-  "function approveDapp(bytes32 name)",
-  "function banDapp(bytes32 name)",
-  "function dappCashOut(bytes32 name, uint256 amount)",
-  "function buyDRNK()",
-  "function demoAirdrop(address[] actors)",
-  "function getAllDapps() view returns (bytes32[])",
-  "function getDapp(bytes32 name) external view returns (bytes memory)"
-];
-
-const tokenContractABI = [
-  "function decimals() view returns (string)",
-  "function symbol() view returns (string)",
-  "function balanceOf(address addr) view returns (uint)",
-  "function transfer(address to, uint amount)",
-  "event Transfer(address indexed from, address indexed to, uint amount)"
-];
+import compiledDappsManager from '../../out/DappsManager.sol/DappsManager.json';
+import compiledTokenContract from '../../out/DRNK.sol/DappRank.json';
 
 const contractAddress = import.meta.env.VITE_SMARTCONTRACTADDRS;
+const DappsManagerABI = compiledDappsManager.abi;
+const tokenContractABI = compiledTokenContract.abi;
 
 let provider = null;
 let signer = null;
@@ -102,6 +86,20 @@ export async function connectWallet() {
          throw error;
      }
  }
+
+export async function listDapps() {
+   if (!contract) {
+     throw new Error('Contract not connected');
+   }
+   try {
+     const tx = await contract.registerDapp(name, cid, { value });
+     await tx.wait();
+     return tx;
+   } catch (error) {
+     console.error('Failed to register dapp:', error);
+     throw error;
+   }
+}
 
 // // Register a new dapp
 // export async function registerDapp(name, cid, value) {
