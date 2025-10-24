@@ -55,12 +55,20 @@ $ anvil --host 0.0.0.0
 ```
 source the .env which contains the deployment variables
 for further information check the [envexample](./envexample) file
+
 ```shell
 $ source .env
 ```
-execute the deployment of the script
+execute the deployment script
+
 ```shell
 $ forge script script/DappsManager.s.sol:DappsManagerScript  --rpc-url $PROVIDER_URL --private-key $PK0 --broadcast
+```
+execute the DemoTest script which will add some demo dapps to the blockchain set in the .env
+and retrive them also it will mint some tokens for specified accounts for playing with it:
+
+```shell
+$ forge script script/DemoTest.s.sol:DemoTestScript  --rpc-url $PROVIDER_URL --private-key $PK0 --broadcast
 ```
 
 ## References
