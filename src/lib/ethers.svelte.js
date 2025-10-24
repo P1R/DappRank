@@ -1,14 +1,23 @@
 import { ethers } from 'ethers';
 
 const DappsManagerABI = [
-  "function registerDapp(bytes32 name, string cid) external payable",
-  "function approveDapp(bytes32 name) external",
-  "function banDapp(bytes32 name) external",
-  "function dappCashOut(bytes32 name, uint256 amount) external",
-  "function buyDRNK() external payable",
-  "function demoAirdrop(address[] actors) external",
-  "function getAllDapps() external view returns (bytes32[] memory)",
+  "function drnk() view returns (address)",
+  "function registerDapp(bytes32 name, string cid)",
+  "function approveDapp(bytes32 name)",
+  "function banDapp(bytes32 name)",
+  "function dappCashOut(bytes32 name, uint256 amount)",
+  "function buyDRNK()",
+  "function demoAirdrop(address[] actors)",
+  "function getAllDapps() view returns (bytes32[])",
   "function getDapp(bytes32 name) external view returns (bytes memory)"
+];
+
+const tokenContractABI = [
+  "function decimals() view returns (string)",
+  "function symbol() view returns (string)",
+  "function balanceOf(address addr) view returns (uint)",
+  "function transfer(address to, uint amount)",
+  "event Transfer(address indexed from, address indexed to, uint amount)"
 ];
 
 const contractAddress = import.meta.env.VITE_SMARTCONTRACTADDRS;
@@ -16,9 +25,10 @@ const contractAddress = import.meta.env.VITE_SMARTCONTRACTADDRS;
 let provider = null;
 let signer = null;
 let signerAddress = null;
-let contractStatus = false;
 let contract = null;
-
+let tokenContract = null;
+let tokenContractAddress = null;
+let dappsList = [];
 
 export async function connectWallet() {
   if (typeof window.ethereum === 'undefined') {
@@ -39,22 +49,60 @@ export async function connectWallet() {
   }
 }
 
-// async function connectContract() {
-//   if (typeof window.ethereum === 'undefined') {
-//     throw new Error('Please install a Web3 wallet like MetaMask.');
-//   }
-//
-//   try {
-//     provider = new ethers.BrowserProvider(window.ethereum);
-//     signer = await provider.getSigner();
-//     contract = new ethers.Contract(contractAddress, DappsManagerABI, signer);
-//     return contract;
-//   } catch (error) {
-//     console.error('Failed to connect contract:', error);
-//     throw error;
-//   }
-// }
-//
+ export async function connectContract() {
+     if (typeof window.ethereum === 'undefined') {
+         alert('Please install a Web3 wallet like MetaMask.');
+         return;
+     }
+     if (contractAddress === null) {
+         alert('Error reading smart contract address, verify the chain or .env');
+         return;
+     }
+     if (signer === null) {
+         alert('ensure there is a signer by connecting the wallet');
+         return;
+     }
+
+     try {
+         contract = new ethers.Contract(contractAddress, DappsManagerABI, signer);
+         return contract;
+     } catch (error) {
+         console.error('Failed to connect contract:', error);
+         throw error;
+     }
+ }
+
+ export async function connectTokenContract() {
+     if (typeof window.ethereum === 'undefined') {
+         alert('Please install a Web3 wallet like MetaMask.');
+         return;
+     }
+     if (contract === null) {
+         alert('Error reading smart contract address, verify the chain or .env');
+         return;
+     }
+     if (signer === null) {
+         alert('ensure there is a signer by connecting the wallet');
+         return;
+     }
+     if (tokenContractAddress === null) {
+         try {
+             tokenContractAddress = await contract.drnk();
+         } catch (error) {
+             console.error('Failed to get token contract address:', error);
+             throw error;
+         }
+     }
+
+     try {
+         tokenContract = new ethers.Contract(tokenContractAddress, tokenContractABI, signer);
+         return tokenContract;
+     } catch (error) {
+         console.error('Failed to connect contract:', error);
+         throw error;
+     }
+ }
+
 // // Register a new dapp
 // export async function registerDapp(name, cid, value) {
 //   if (!contract) {
@@ -71,10 +119,13 @@ export async function connectWallet() {
 //   }
 // }
 
-export let ethersVariables = $state({
+export let ethVars = $state({
     provider,
     signer,
     signerAddress,
-    contractStatus,
-    contractAddress
+    contractAddress,
+    contract,
+    tokenContract,
+    tokenContractAddress,
+    dappsList
 });
