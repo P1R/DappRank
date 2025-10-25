@@ -1,6 +1,7 @@
 <script>
   import WalletConnector from './components/WalletConnector.svelte';
   import IPFSConnector from './components/IPFSConnector.svelte';
+  import DappsData from './components/DappsData.svelte';
   import DappRankList from './components/DappRankList.svelte';
 
   document.addEventListener('DOMContentLoaded', function() {
@@ -42,6 +43,7 @@
             <div class="logo-text">DappRank</div>
         </div>
         <div class="controls">
+            <DappsData />
             <button class="btn btn-add">Add Dapp</button>
             <WalletConnector />
         </div>
