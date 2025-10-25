@@ -28,7 +28,7 @@
            return acc;
           }, Promise.resolve([])
         );
-        console.log("dappsAllData:", $state.snapshot(ethVars.dappsList));
+        //console.log("dappsAllData:", $state.snapshot(ethVars.dappsList));
     }
   }
 

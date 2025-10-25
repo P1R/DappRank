@@ -87,36 +87,6 @@ export async function connectWallet() {
      }
  }
 
-export async function listDapps() {
-   if (!contract) {
-     throw new Error('Contract not connected');
-   }
-   try {
-     const tx = await contract.registerDapp(name, cid, { value });
-     await tx.wait();
-     return tx;
-   } catch (error) {
-     console.error('Failed to register dapp:', error);
-     throw error;
-   }
-}
-
-// // Register a new dapp
-// export async function registerDapp(name, cid, value) {
-//   if (!contract) {
-//     throw new Error('Contract not connected');
-//   }
-//
-//   try {
-//     const tx = await contract.registerDapp(name, cid, { value });
-//     await tx.wait();
-//     return tx;
-//   } catch (error) {
-//     console.error('Failed to register dapp:', error);
-//     throw error;
-//   }
-// }
-
 export let ethVars = $state({
     provider,
     signer,
