@@ -1,6 +1,6 @@
 <script>
   import { ethVars } from '../lib/ethers.svelte.js';
-  import { toUtf8String } from 'ethers';
+  import { toUtf8String, formatUnits } from 'ethers';
 
   // ToDo Must order them before
   //  const sortedDapps = [...DappsList].sort((a, b) => {
@@ -15,9 +15,8 @@
       name: dapp.name ? toUtf8String(dapp.name) : 'Unknown DApp',
       url: dapp.cid ? `https://ipfs.io/ipfs/${dapp.cid}` : '#',
       rating: parseInt(dapp.rate) || 0,
-      tokensDonated: parseInt(dapp.balance) || 0,
-      tokensBurned: parseInt(dapp.burned) || 0,
-      users: parseInt(dapp.weight_total_sum) || 0,
+      tokensDonated: formatUnits(dapp.balance, 18) || 0,
+      tokensBurned: formatUnits(dapp.burned, 18) || 0,
       owner: dapp.owner,
       status: dapp.status ? toUtf8String(dapp.status) : 'Unknown',
       tags: ['DApp', 'Web3'] // You can customize tags based on dapp properties
@@ -35,7 +34,7 @@
         <div class="rank">#{item.rank}</div>
         <div class="dapp-name">{item.name}</div>
       </div>
-      <div class="dapp-url">{item.url}</div>
+      <div class="dapp-url"><a href={item.url}>{item.url}</a></div>
       <div class="stats">
         <div class="stat-box">
           <div class="stat-value">{item.rating}</div>
@@ -48,10 +47,6 @@
         <div class="stat-box">
           <div class="stat-value">{item.tokensBurned}</div>
           <div class="stat-label">BURNED</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-value">{item.users}</div>
-          <div class="stat-label">USERS</div>
         </div>
       </div>
       <div class="rating-bar">

@@ -55,12 +55,11 @@ contract DemoTestScript is Script {
 
         // Do airdrops
         dappsMgr.demoAirdrop(actors);
-
         for(uint i; i < actors.length; i++) {
             console.log("actor",i+1," balance is ", drnkToken.balanceOf(actors[i]));
         }
 
-        // Register Dapps
+        //Register Dapps
         for (uint256 i; i < dappNames.length; i++) {
             dappsMgr.registerDapp{value: listingFee}(Conversor.stringToBytes32(dappNames[i]), dappURIs[i]);
         }
@@ -71,7 +70,48 @@ contract DemoTestScript is Script {
             console.log("dapp",i+1,": ");
             console.log(Conversor.bytes32ToString(dappsRegistry[i]));
         }
+        // Retrive Dapp
+        string memory retCID;
+        bytes32 status;
+
+        // show submitted dapps status
+        for (uint256 i; i < dappNames.length; i++) {
+            (retCID,,,,,,, status) = dappsMgr.getDappInfo(Conversor.stringToBytes32(dappNames[i]));
+            console.log(dappNames[i],"with CID", retCID);
+            console.log("has Status:", Conversor.bytes32ToString(status));
+        }
+
+        console.log("-----------------------------------------------------------");
+
+        // execute approval
+        for (uint256 i; i < dappNames.length; i++) {
+            dappsMgr.approveDapp(Conversor.stringToBytes32(dappNames[i]));
+        }
+
+        // show Active dapps status
+        for (uint256 i; i < dappNames.length; i++) {
+            (retCID,,,,,,, status) = dappsMgr.getDappInfo(Conversor.stringToBytes32(dappNames[i]));
+            console.log(dappNames[i],"with CID", retCID);
+            console.log("has Status:", Conversor.bytes32ToString(status));
+        }
+
+        console.log("-----------------------------------------------------------");
+
+        // Voting Process
+        uint256 vote_amount = 100e18;
+
+        // allow daggTokens from broadcaster to dappsMgr
+        drnkToken.approve(address(dappsMgr), vote_amount);
+        uint256 allowanceAmount = drnkToken.allowance(owner, address(dappsMgr));
+        console.log("Allowed for voting:", allowanceAmount);
+
+        // test Voting for 80
+        dappsMgr.voteDapp(Conversor.stringToBytes32(dappNames[0]), vote_amount, 80);
+        console.log("Voted first dapp with a rate of 80 and wight of 100");
+
+        //dappsMgr.dappCashOut(dappNames[0], 100e18);
 
         vm.stopBroadcast();
     }
+
 }
