@@ -1,6 +1,14 @@
 # DappRank
 Status Deployet at Sepolia:
+
+[DappRank Website dnsLink](https://dapprank.decentralizedscience.org)
+
+[ipns](https://gateway-mx.decentralizedscience.org/ipns/dapprank.decentralizedscience.org/)
+
+Web3/ipfs:  bafybeihx27kivfu7tgvj7llxnid26yqn7j5w3jhugpoeb6odys636lcm5q
+
 Dapps contract address is:  [0xD60DC0805f44d10cAc6594f1a501c67929448957](https://sepolia.etherscan.io/address/0xD60DC0805f44d10cAc6594f1a501c67929448957)
+
 DRNK Token contract address is:  [0x00687D35C43d961BA2492f2808de904FCE93b911](https://sepolia.etherscan.io/address/0x00687D35C43d961BA2492f2808de904FCE93b911)
 
 The DappRank DeFi model introduces a revolutionary decentralized ranking system
