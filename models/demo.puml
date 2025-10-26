@@ -1,0 +1,18 @@
+@startuml
+actor "Test User" as User
+participant "DappsManager" as DappsMgr
+participant "DRNK Token" as DRNK
+participant "Dapp" as Dapp
+
+User -> DappsMgr : demoAirdrop(testUsers)
+DappsMgr -> DRNK : Mint 1000 tokens
+DRNK -> User : Transfer tokens
+
+User -> DappsMgr : voteDapp(dapp1, amount, rate)
+DappsMgr -> Dapp : Store vote with SRWV calculation
+DappsMgr -> Dapp : Update vote statistics
+
+User -> DappsMgr : burn(1000)
+DappsMgr -> DRNK : Burn tokens
+DRNK -> User : Reduce balance
+@enduml

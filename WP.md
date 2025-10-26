@@ -121,6 +121,10 @@ deflationary pressure that supports long-term token value retention.
 
 ### Voting Process
 
+![Sequence Diagram of the Voting Process](./models/demo_long.svg)
+
+Img 1. Shows Sequence Diagram of the Voting Process
+
 When users vote on dApps, the system applies the SRWV algorithm:
 
 1. User deposits tokens for voting
@@ -143,6 +147,10 @@ token supply over time. This approach mirrors Ethereum's "ultrasound money"
 concept where decreasing supply increases value retention [9].
 
 ## Technical Implementation
+
+![Use Case Diagram of DappRank](./models/use_case.svg)
+
+Img 2. Shows Use Case of DappRank
 
 The system uses a combination of:
 - ERC20 token standard with burn capabilities [1]

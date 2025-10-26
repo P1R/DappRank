@@ -1,0 +1,28 @@
+@startuml
+actor "Test User" as User
+actor "Dapp Owner" as DappOwner
+participant "DappsManager" as DappsMgr
+participant "DRNK Token" as DRNK
+participant "Dapp" as Dapp
+
+User -> DappsMgr : demoAirdrop(testUsers)
+DappsMgr -> DRNK : Mint 1000 tokens
+DRNK -> User : Transfer tokens
+DRNK -> DappOwner : Transfer tokens
+
+
+DappOwner -> DappsMgr : registerDapp(name, cid)
+DappsMgr -> DRNK : Transfer listingFee from dappOwner
+DRNK -> DappOwner : Deduct listingFee
+
+User -> DappsMgr : voteDapp(dapp1, amount, rate)
+DappsMgr -> Dapp : Store vote with SRWV calculation
+DappsMgr -> Dapp : Update vote statistics
+
+DappOwner -> DappsMgr : cashOut(dapp1, amount)
+DappsMgr -> DRNK : Transfer amount from dapp
+DRNK -> DappOwner : Transfer net amount (after fees)
+DappsMgr -> DRNK : Burn portion of amount
+DRNK -> DappOwner : Reduce total supply
+
+@enduml

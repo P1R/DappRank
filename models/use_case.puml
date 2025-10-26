@@ -1,0 +1,22 @@
+@startuml
+top to bottom direction
+actor "User" as User
+actor "Dapp Owner" as DappOwner
+actor "DAO/Admin" as Admin
+
+rectangle "DappRank System" {
+  User --> (Register as Fan)
+  User --> (Vote on Dapps)
+  User --> (Burn Tokens)
+  User --> (View Rankings)
+
+  DappOwner --> (Register Dapp)
+  DappOwner --> (Cash Out Rewards)
+  DappOwner --> (View Dapp Stats)
+
+  Admin --> (Manage Roles)
+  Admin --> (Set Parameters)
+  Admin --> (View System Stats)
+}
+
+@enduml

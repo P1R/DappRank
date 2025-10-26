@@ -8,6 +8,10 @@ decentralized governance while establishing the foundation for an
 similar to how Ethereum's supply decreases through the "ultrasound money"
 concept.
 
+![Use Case Diagram of DappRank](./models/use_case.svg)
+
+Img 1. Shows Use Case of DappRank
+
 The SRWV model provides a mathematically sound solution for decentralized
 governance while aligning with the ultrasound money model's deflationary goals.
 By implementing the square root function for voting power calculation, DappRank
@@ -78,6 +82,12 @@ The SRWV mechanism directly supports the ultrasound money model through:
 3. **Game-Theoretic Stability**: The system creates natural disincentives for vote manipulation through its mathematical structure [2]
 
 ## [WhitePaper](./WP.md)
+
+![Sequence Diagram of the Voting Process](./models/demo.svg)
+
+Img 2. Shows Sequence Diagram of the Voting Process
+
+which also includes a Demo test process to understand the Voting and other procedures.
 
 ## Install requirements
 
