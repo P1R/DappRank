@@ -30,8 +30,8 @@ W_i = \sqrt{T_i}
 $$
 
 Where:
-- $ W_i $: Fan weight (voting power) of voter $ i $
-- $ T_i $: Tokens staked by voter $ i $ [2]
+- $W_i$: Fan weight (voting power) of voter $i$
+- $T_i$: Tokens staked by voter $i$ [2]
 
 This equation ensures voting power grows sublinearly with token holdings, reducing the influence of large stakeholders [2].
 
@@ -43,10 +43,10 @@ $$
 
 Where:
 
-- $ D_r $: Final rating of dApp $ D $
-- $ V_i $: Vote rate assigned by voter $ i $ (0 < $ V_i $ ≤ 100)
-- $ S_{vw} $: Sum of weighted votes $ \sum_{i} (V_i \times \sqrt{T_i}) $
-- $ S_{wt} $: Sum of total weights $ \sum_{i} \sqrt{T_i} $ [2]
+- $D_r$: Final rating of dApp $D$
+- $V_i$: Vote rate assigned by voter $i$ (0 < $V_i$ ≤ 100)
+- $S_{vw}$: Sum of weighted votes $\sum_{i} (V_i \times \sqrt{T_i})$
+- $S_{wt}$: Sum of total weights $\sum_{i} \sqrt{T_i}$ [2]
 
 ### Implementation Context
 1. **Fan Weight Execution**: The `voteDapp` function in `DappsManager.sol` calculates fan weight using `Math.sqrt(_amount, Math.Rounding.Ceil)` to approximate $ \sqrt{T_i} $ [2]
