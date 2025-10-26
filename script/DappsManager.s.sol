@@ -9,15 +9,15 @@ contract DappsManagerScript is Script {
     DappsManager public dappsMgr;
     DappRank public drnkToken;
 
-    uint256 listingFee = 100e16;
+    uint256 listingFee = 1e13;
     uint256 burningFee = 1000; // 10%
     uint256 daoFee = 100; // 1 %
     uint256 bonus = 1000e18;
     address public owner;
-    string[] public dappsURI;
+    //string[] public dappsURI;
 
     function setUp() public {
-        //dappsURI = vm.envString("dapps", '\n');
+        //dappsURI = vm.envString("DAPPS", '\n');
         //owner = vm.envAddress("ACC0");
     }
 

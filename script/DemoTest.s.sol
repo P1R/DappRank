@@ -10,7 +10,7 @@ contract DemoTestScript is Script {
     DappsManager public dappsMgr;
     DappRank public drnkToken;
 
-    uint256 listingFee = 100e16;
+    uint256 listingFee = 1e13;
     uint256 burningFee = 1000; // 10%
     uint256 daoFee = 100; // 1 %
     uint256 bonus = 1000e18;
@@ -39,14 +39,14 @@ contract DemoTestScript is Script {
     }
 
     function run() public {
-        uint256 deployerPrivateKey = vm.envUint("PK0");
+        //uint256 deployerPrivateKey = vm.envUint("PK0");
 
         // startBroadcast and stopBraodcast will let us execute transactions anything between them
-        vm.startBroadcast(deployerPrivateKey);
-
+        //vm.startBroadcast(deployerPrivateKey);
+        vm.startBroadcast();
         //dappsMgr = new DappsManager(listingFee, daoFee, burningFee, bonus);
         console.log(dappsMgrAddress);
-        dappsMgr =  DappsManager(dappsMgrAddress);
+        dappsMgr = DappsManager(dappsMgrAddress);
         // Attach deployed token
         drnkToken = DappRank(address(dappsMgr.drnk()));
         console.log("-----------------------------------------------------");
