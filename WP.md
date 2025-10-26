@@ -23,7 +23,7 @@ Let us define the key variables involved in the SRWV system:
 - $V_i$: The voting rate assigned by voter $i$, where $0 < V_i \leq 100$.
 - $W_i$: The fan weight (voting power) of voter $i$, calculated as $W_i = \sqrt{T_i}$.
 - $D$: The dApp being voted on.
-- $D_r$: The final rating of dApp $ D $.
+- $D_r$: The final rating of dApp $D$.
 - $S_{vw}$: The sum of weighted votes, defined as $S_{vw} = \sum_{i} (V_i \times W_i)$.
 - $S_{wt}$: The sum of total weights, defined as $S_{wt} = \sum_{i} W_i$.
 
@@ -43,9 +43,9 @@ $$
 2. **Fan Weight Calculation**: The fan weight $W_i$ is calculated using the
    square root of the staked tokens:
 
-   $$
-   W_i = \sqrt{T_i}
-   $$
+$$
+W_i = \sqrt{T_i}
+$$
 
    This ensures that the voting power grows sublinearly with the number of
    tokens, reducing the influence of large stakeholders [2].
@@ -74,16 +74,19 @@ The fan weights are calculated as follows:
 - $W_3 = \sqrt{1,000,000} = 1,000$
 
 The sum of weighted votes is:
+
 $$
 S_{vw} = (50 \times 10) + (80 \times 100) + (90 \times 1,000) = 500 + 8,000 + 90,000 = 98,500
 $$
 
 The sum of total weights is:
+
 $$
 S_{wt} = 10 + 100 + 1,000 = 1,110
 $$
 
 The final rating of the dApp is:
+
 $$
 D_r = \frac{98,500}{1,110} \approx 88.74
 $$
