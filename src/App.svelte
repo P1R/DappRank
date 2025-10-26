@@ -4,6 +4,7 @@
   import DappsData from './components/DappsData.svelte';
   import DappRankList from './components/DappRankList.svelte';
   import GetDRNK from './components/GetDRNK.svelte';
+  import Vote4Dapp from './components/Vote4Dapp.svelte';
 
   document.addEventListener('DOMContentLoaded', function() {
       const particlesContainer = document.getElementById('particles');
@@ -44,6 +45,7 @@
             <div class="logo-text">DappRank</div>
         </div>
         <div class="controls">
+            <Vote4Dapp />
             <GetDRNK />
             <DappsData />
             <button class="btn btn-add">Add Dapp</button>
