@@ -40,7 +40,7 @@
   });
 </script>
 
-<header class="sticky top-0 z-[100] border-b-2 border-neon-cyan bg-void/80 px-4 py-4 shadow-[0_0_20px_rgba(0,247,255,0.3)] backdrop-blur-sm sm:px-6 lg:px-10">
+<header class="sticky top-0 z-[100] border-b-2 border-neon-cyan bg-void/80 px-4 py-4 shadow-[0_0_20px_rgba(0,247,255,0.3)] sm:px-6 lg:px-10">
   <div class="mx-auto flex max-w-[1400px] items-center justify-between">
     <div class="flex items-center gap-3">
       <svg class="h-8 w-8 shrink-0 text-neon-pink drop-shadow-[0_0_6px_#ff00cc]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
