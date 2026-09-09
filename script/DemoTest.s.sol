@@ -26,8 +26,8 @@ contract DemoTestScript is Script {
     address[] public actors;
 
     function setUp() public {
-        dappURIs = vm.envString("DAPPS", '\n');
-        dappNames = vm.envString("DAPPNAMES", '\n');
+        dappURIs = vm.envString("DAPPS", "\n");
+        dappNames = vm.envString("DAPPNAMES", "\n");
         owner = vm.envAddress("ACC0");
         actor1 = vm.envAddress("ACC1");
         actor2 = vm.envAddress("ACC2");
@@ -55,8 +55,8 @@ contract DemoTestScript is Script {
 
         // Do airdrops
         dappsMgr.demoAirdrop(actors);
-        for(uint i; i < actors.length; i++) {
-            console.log("actor",i+1," balance is ", drnkToken.balanceOf(actors[i]));
+        for (uint256 i; i < actors.length; i++) {
+            console.log("actor", i + 1, " balance is ", drnkToken.balanceOf(actors[i]));
         }
 
         //Register Dapps
@@ -67,7 +67,7 @@ contract DemoTestScript is Script {
         bytes32[] memory dappsRegistry = dappsMgr.getAllDappNames();
 
         for (uint256 i; i < dappsRegistry.length; i++) {
-            console.log("dapp",i+1,": ");
+            console.log("dapp", i + 1, ": ");
             console.log(Conversor.bytes32ToString(dappsRegistry[i]));
         }
         // Retrive Dapp
@@ -77,7 +77,7 @@ contract DemoTestScript is Script {
         // show submitted dapps status
         for (uint256 i; i < dappNames.length; i++) {
             (retCID,,,,,,, status) = dappsMgr.getDappInfo(Conversor.stringToBytes32(dappNames[i]));
-            console.log(dappNames[i],"with CID", retCID);
+            console.log(dappNames[i], "with CID", retCID);
             console.log("has Status:", Conversor.bytes32ToString(status));
         }
 
@@ -91,7 +91,7 @@ contract DemoTestScript is Script {
         // show Active dapps status
         for (uint256 i; i < dappNames.length; i++) {
             (retCID,,,,,,, status) = dappsMgr.getDappInfo(Conversor.stringToBytes32(dappNames[i]));
-            console.log(dappNames[i],"with CID", retCID);
+            console.log(dappNames[i], "with CID", retCID);
             console.log("has Status:", Conversor.bytes32ToString(status));
         }
 
@@ -113,5 +113,4 @@ contract DemoTestScript is Script {
 
         vm.stopBroadcast();
     }
-
 }

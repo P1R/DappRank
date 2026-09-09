@@ -225,12 +225,8 @@ contract DappsManager is AccessControl {
 
     function DappNameExists(bytes32 _dapp) public view returns (bool) {
         Dapp storage dp = dappsIndex[_dapp];
-        return (
-            !(
-                bytes(dp.cid).length == 0 && dp.rate == 0 && dp.weight_votes_sum == 0 && dp.weight_total_sum == 0
-                    && dp.balance == 0 && dp.burned == 0 && dp.owner == address(0x0)
-            )
-        );
+        return (!(bytes(dp.cid).length == 0 && dp.rate == 0 && dp.weight_votes_sum == 0 && dp.weight_total_sum == 0
+                    && dp.balance == 0 && dp.burned == 0 && dp.owner == address(0x0)));
     }
 
     function voteDapp(bytes32 _name, uint256 _amount, uint256 _rate) external {
