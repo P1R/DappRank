@@ -27,202 +27,48 @@
   });
 </script>
 
-<div class="container">
+<div class="grid grid-cols-1 gap-6 p-4 sm:grid-cols-2 sm:p-6 xl:grid-cols-3 max-w-[1400px] mx-auto">
   {#each data as item}
-    <div class="ranking-card">
-      <div class="card-header">
-        <div class="rank">#{item.rank}</div>
-        <div class="dapp-name">{item.name}</div>
+    <div class="group relative overflow-hidden rounded-xl border border-neon-cyan/30 bg-void/70 p-5 shadow-[0_0_15px_rgba(0,247,255,0.2)] transition-all duration-300 hover:-translate-y-1 hover:border-neon-pink/50 hover:shadow-[0_0_20px_rgba(0,247,255,0.4)]">
+      <div class="absolute inset-x-0 top-0 h-[3px] animate-[gradientSlide_3s_linear_infinite] bg-gradient-to-r from-[#00ffcc] via-[#ff00ff] to-[#00ffcc] bg-[length:200%_200%]"></div>
+
+      <div class="flex flex-col gap-2 border-b border-neon-cyan/20 pb-2.5 mb-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="text-2xl font-bold text-neon-pink drop-shadow-[0_0_8px_rgba(255,0,255,0.5)]">#{item.rank}</div>
+        <div class="text-lg text-neon-cyan drop-shadow-[0_0_5px_rgba(0,247,255,0.5)] sm:text-right">{item.name}</div>
       </div>
-      <div class="dapp-url"><a href={item.url}>{item.url}</a></div>
-      <div class="stats">
-        <div class="stat-box">
-          <div class="stat-value">{item.rating}</div>
-          <div class="stat-label">RATING</div>
+
+      <div class="mt-1 break-all text-sm text-neon-pink">
+        <a href={item.url}>{item.url}</a>
+      </div>
+
+      <div class="my-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div class="rounded-lg border border-neon-cyan/20 bg-black/30 p-3.5 text-center transition-all duration-300 hover:scale-105 hover:bg-neon-cyan/10">
+          <div class="text-2xl font-bold text-neon-cyan drop-shadow-[0_0_8px_rgba(0,247,255,0.5)]">{item.rating}</div>
+          <div class="text-sm opacity-80">RATING</div>
         </div>
-        <div class="stat-box">
-          <div class="stat-value">{item.tokensDonated}</div>
-          <div class="stat-label">TOKENS DONATED</div>
+        <div class="rounded-lg border border-neon-cyan/20 bg-black/30 p-3.5 text-center transition-all duration-300 hover:scale-105 hover:bg-neon-cyan/10">
+          <div class="text-2xl font-bold text-neon-cyan drop-shadow-[0_0_8px_rgba(0,247,255,0.5)]">{item.tokensDonated}</div>
+          <div class="text-sm opacity-80">TOKENS DONATED</div>
         </div>
-        <div class="stat-box">
-          <div class="stat-value">{item.tokensBurned}</div>
-          <div class="stat-label">BURNED</div>
+        <div class="rounded-lg border border-neon-cyan/20 bg-black/30 p-3.5 text-center transition-all duration-300 hover:scale-105 hover:bg-neon-cyan/10">
+          <div class="text-2xl font-bold text-neon-cyan drop-shadow-[0_0_8px_rgba(0,247,255,0.5)]">{item.tokensBurned}</div>
+          <div class="text-sm opacity-80">BURNED</div>
         </div>
       </div>
-      <div class="rating-bar">
-        <div class="rating-fill" style="--rating-width: {item.rating}%"></div>
+
+      <div class="relative my-4 h-2.5 overflow-hidden rounded-full bg-black/30">
+        <div
+          class="relative h-full rounded-full bg-gradient-to-r from-[#00ffcc] to-[#ff00ff]"
+          style="width: {item.rating}%"
+        >
+          <div class="absolute inset-0 animate-[shine_3s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+        </div>
       </div>
-      <div class="tags">
-        <span class="tag">Owner: {item.owner.slice(0, 6)}...{item.owner.slice(-4)}</span>
-        <span class="tag">Status: {item.status}</span>
+
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="neon-tag">Owner: {item.owner.slice(0, 6)}...{item.owner.slice(-4)}</span>
+        <span class="neon-tag">Status: {item.status}</span>
       </div>
     </div>
   {/each}
 </div>
-
-<style>
-  /* Main container */
-  .container {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 20px;
-  }
-
-  /* Ranking card */
-  .ranking-card {
-    background: rgba(10, 10, 30, 0.7);
-    border: 1px solid rgba(0, 255, 204, 0.3);
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .ranking-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
-    border-color: rgba(255, 0, 255, 0.5);
-  }
-
-  .ranking-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, #00ffcc, #ff00ff, #00ffcc);
-    animation: gradient 3s linear infinite;
-    background-size: 200% 200%;
-  }
-
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(0, 255, 204, 0.2);
-  }
-
-  .rank {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #ff00ff;
-    text-shadow: 0 0 10px rgba(255, 0, 255, 0.7);
-  }
-
-  .dapp-name {
-    font-size: 1.5rem;
-    color: #00ffcc;
-    text-shadow: 0 0 5px rgba(0, 255, 204, 0.7);
-  }
-
-  .dapp-url {
-    color: #ff00ff;
-    font-size: 0.9rem;
-    margin-top: 5px;
-    word-break: break-all;
-  }
-
-  .stats {
-    display: flex;
-    justify-content: space-between;
-    margin: 20px 0;
-  }
-
-  .stat-box {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(0, 255, 204, 0.2);
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-    flex: 1;
-    margin: 0 10px;
-    transition: all 0.3s ease;
-  }
-
-  .stat-box:hover {
-    background: rgba(0, 255, 204, 0.1);
-    transform: scale(1.05);
-  }
-
-  .stat-value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #00ffcc;
-    text-shadow: 0 0 10px rgba(0, 255, 204, 0.7);
-  }
-
-  .stat-label {
-    font-size: 0.9rem;
-    opacity: 0.8;
-  }
-
-  .rating-bar {
-    height: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-    margin: 15px 0;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .rating-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #00ffcc, #ff00ff);
-    border-radius: 5px;
-    width: var(--rating-width);
-    animation: fill 2s ease-in-out;
-  }
-
-  .rating-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    animation: shine 3s infinite;
-  }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 15px;
-  }
-
-  .tag {
-    background: rgba(0, 255, 204, 0.1);
-    border: 1px solid rgba(0, 255, 204, 0.3);
-    border-radius: 20px;
-    padding: 5px 15px;
-    font-size: 0.8rem;
-    color: #00ffcc;
-  }
-
-  /* Responsive design */
-  @media (max-width: 768px) {
-    .stats {
-      flex-direction: column;
-    }
-
-    .stat-box {
-      margin: 5px 0;
-    }
-
-    .card-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .dapp-name {
-      margin-top: 10px;
-    }
-  }
-</style>

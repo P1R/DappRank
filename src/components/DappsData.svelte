@@ -54,25 +54,5 @@
 </script>
 
 <div>
-    <button class="btn" onclick={getDappNames}>Refresh</button>
+    <button class="btn-neon" onclick={getDappNames}>Refresh</button>
 </div>
-
-<style>
-  .btn {
-      padding: 10px 20px;
-      background: rgba(10, 10, 26, 0.7);
-      border: 1px solid #00f7ff;
-      color: #00f7ff;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
-  }
-
-  .btn:hover {
-      background: rgba(0, 247, 255, 0.2);
-      box-shadow: 0 0 15px rgba(0, 247, 255, 0.5);
-      transform: translateY(-2px);
-  }
-</style>
