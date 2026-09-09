@@ -60,8 +60,8 @@
     </button>
 
     {#if showPopup}
-        <div class="popup-overlay" on:click={closePopup}>
-            <div class="popup-content" on:click={(e) => e.stopPropagation()}>
+        <div class="popup-overlay" on:click={closePopup} role="presentation">
+            <div class="popup-content" on:click={(e) => e.stopPropagation()} role="presentation">
                 <div class="popup-header">
                     <h3>Buy Tokens</h3>
                     <button class="close-button" on:click={closePopup}>×</button>
@@ -300,4 +300,3 @@
     }
 }
 </style>
-
