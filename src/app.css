@@ -4,8 +4,18 @@
     --color-void: #0a0a16;
     --color-deep: #1a0a2a;
     --color-ink: #e0e0ff;
+
     --color-neon-cyan: #00f7ff;
     --color-neon-pink: #ff00cc;
+    --color-neon-green: #39ff14;
+    --color-neon-amber: #ffe600;
+    --color-neon-red: #ff3355;
+
+    --color-trust-high: var(--color-neon-green);
+    --color-trust-mid: var(--color-neon-amber);
+    --color-trust-low: var(--color-neon-red);
+    --color-trust-neutral: var(--color-neon-cyan);
+
     --font-sans: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -43,7 +53,7 @@
 
     /* Modal / popup */
     .modal-overlay {
-        @apply fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm;
+        @apply fixed inset-0 z-1000 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm;
     }
 
     .modal-content {
@@ -114,6 +124,22 @@
     /* Neon pill tag */
     .neon-tag {
         @apply rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-1 text-xs text-neon-cyan;
+    }
+
+    .tier-badge-high {
+        @apply inline-flex items-center gap-1.5 rounded-full border border-trust-high/40 bg-trust-high/10 px-2.5 py-1 text-xs font-semibold text-trust-high;
+    }
+
+    .tier-badge-mid {
+        @apply inline-flex items-center gap-1.5 rounded-full border border-trust-mid/40 bg-trust-mid/10 px-2.5 py-1 text-xs font-semibold text-trust-mid;
+    }
+
+    .tier-badge-low {
+        @apply inline-flex items-center gap-1.5 rounded-full border border-trust-low/40 bg-trust-low/10 px-2.5 py-1 text-xs font-semibold text-trust-low;
+    }
+
+    .tier-badge-neutral {
+        @apply inline-flex items-center gap-1.5 rounded-full border border-trust-neutral/40 bg-trust-neutral/10 px-2.5 py-1 text-xs font-semibold text-trust-neutral;
     }
 }
 

@@ -1,15 +1,16 @@
 # DappRank
+
 Status Deployet at Sepolia:
 
 [DappRank Website dnsLink](https://dapprank.decentralizedscience.org)
 
 [ipns](https://gateway-mx.decentralizedscience.org/ipns/dapprank.decentralizedscience.org/)
 
-Web3/ipfs:  bafybeihx27kivfu7tgvj7llxnid26yqn7j5w3jhugpoeb6odys636lcm5q
+Web3/ipfs: bafybeihx27kivfu7tgvj7llxnid26yqn7j5w3jhugpoeb6odys636lcm5q
 
-Dapps contract address is:  [0xD60DC0805f44d10cAc6594f1a501c67929448957](https://sepolia.etherscan.io/address/0xD60DC0805f44d10cAc6594f1a501c67929448957)
+Dapps contract address is: [0xD60DC0805f44d10cAc6594f1a501c67929448957](https://sepolia.etherscan.io/address/0xD60DC0805f44d10cAc6594f1a501c67929448957)
 
-DRNK Token contract address is:  [0x00687D35C43d961BA2492f2808de904FCE93b911](https://sepolia.etherscan.io/address/0x00687D35C43d961BA2492f2808de904FCE93b911)
+DRNK Token contract address is: [0x00687D35C43d961BA2492f2808de904FCE93b911](https://sepolia.etherscan.io/address/0x00687D35C43d961BA2492f2808de904FCE93b911)
 
 The DappRank DeFi model introduces a revolutionary decentralized ranking system
 for dapps using a novel voting mechanism called Square Root Weighted Voting
@@ -45,6 +46,7 @@ W_i = \sqrt{T_i}
 $$
 
 Where:
+
 - $W_i$: Fan weight (voting power) of voter $i$
 - $T_i$: Tokens staked by voter $i$ [2]
 
@@ -64,6 +66,7 @@ Where:
 - $S_{wt}$: Sum of total weights $\sum_{i} \sqrt{T_i}$ [2]
 
 ### Implementation Context
+
 1. **Fan Weight Execution**: The `voteDapp` function in `DappsManager.sol` calculates fan weight using `Math.sqrt(_amount, Math.Rounding.Ceil)` to approximate $ \sqrt{T_i} $ [2]
 2. **Weighted Vote Aggregation**: The contract maintains running totals:
    - `dapp.weight_votes_sum += (vote.vote_rate * vote.fan_weight)`
@@ -71,14 +74,18 @@ Where:
 3. **Rating Finalization**: The final dApp rating is computed as `dapp.rate = dapp.weight_votes_sum / dapp.weight_total_sum` [2]
 
 ## Test Validation [3]
+
 The test suite in `DappsManager.t.sol` provides empirical validation:
+
 - For 5 test users with dynamic voting amounts, the system correctly calculates:
   - `weight_votes_sum = 6,380,084,467,978`
   - `weight_total_sum = 106,138,700,962`
   - Final rating `rate = 60` (calculated as $ 6,380,084,467,978 / 106,138,700,962 $) [3]
 
 ## Ultrasound Money Model Integration
+
 The SRWV mechanism directly supports the ultrasound money model through:
+
 1. **Deflationary Burning**: A portion of voting tokens is burned during reward distribution [2]
 2. **Supply Control**: Token supply reduction via:
    - Listing fees burned during dApp registration
@@ -86,6 +93,7 @@ The SRWV mechanism directly supports the ultrasound money model through:
 3. **Dynamic Equilibrium**: The square root function ensures token utility remains balanced between governance power and scarcity [2]
 
 ## Security and Governance Implications
+
 1. **Whale Resistance**: The mathematical properties of $ \sqrt{T_i} $ create diminishing returns for large token holders:
    - 1,000 tokens = 31.6 votes
    - 10,000 tokens = 100 votes [2]
@@ -102,10 +110,9 @@ which also includes a Demo test process to understand the Voting and other proce
 
 ## Install requirements
 
-* bun
-* npm
-* foundry
-* git
+- bun
+- foundry
+- git
 
 > Note: tested on linux
 
@@ -114,24 +121,26 @@ which also includes a Demo test process to understand the Voting and other proce
 ```shell
 $ git clone https://github.com/P1R/DappRank.git
 ```
+
 ```shell
 $ cd DappRank
 ```
+
 install frontend requirements
+
 ```shell
-$ npm install
+$ bun install
 ```
 
 ## Frontend Development & Deployment
 
 run the development mode
+
 ```shell
 $ bun run dev --open
 ```
 
-to host the site use either fleek, piñata or nft.storage. Optionaly you can setup
-your own kubo/helia ipfs instance as public service and gateway and there pin
-the website.
+to host the site use either fleek, piñata or nft.storage.
 
 ## Foundry Usage
 
@@ -150,20 +159,24 @@ $ forge test
 ## Smart Contracts Deployment testing
 
 use tmux or in an alternative shell run anvil
+
 ```shell
 $ anvil --host 0.0.0.0
 ```
+
 source the .env which contains the deployment variables
 for further information check the [envexample](./envexample) file
 
 ```shell
 $ source .env
 ```
+
 execute the deployment script
 
 ```shell
 $ forge script script/DappsManager.s.sol:DappsManagerScript  --rpc-url $PROVIDER_URL --private-key $PK0 --broadcast
 ```
+
 execute the DemoTest script which will add some demo dapps to the blockchain set in the .env
 and retrive them also it will mint some tokens for specified accounts for playing with it:
 
@@ -172,6 +185,7 @@ $ forge script script/DemoTest.s.sol:DemoTestScript  --rpc-url $PROVIDER_URL --p
 ```
 
 ## References
+
 1. [DRNK](./src-sc/DRNK.sol)
 2. [DappsManager](./src-sc/DappsManager.sol)
 3. [Demo test](./test/DappsManager.t.sol)

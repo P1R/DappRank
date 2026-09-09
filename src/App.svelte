@@ -1,6 +1,5 @@
 <script>
   import WalletConnector from './components/WalletConnector.svelte';
-  import IPFSConnector from './components/IPFSConnector.svelte';
   import DappsData from './components/DappsData.svelte';
   import DappRankList from './components/DappRankList.svelte';
   import GetDRNK from './components/GetDRNK.svelte';
@@ -99,6 +98,4 @@
   <div class="bg-scene"></div>
   <div class="particles" id="particles"></div>
   <DappRankList />
-  <hr class="mx-auto my-8 max-w-[1400px] border-neon-cyan/20" />
-  <IPFSConnector />
 </main>
