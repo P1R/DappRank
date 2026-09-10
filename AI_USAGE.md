@@ -51,6 +51,14 @@ El agente de IA (DeepSeek en Zed) investigó el problema de forma dirigida por e
   - `svelte 5.41.0`, `ethers 6.15.0`, `vite 7.1.10`, `@sveltejs/vite-plugin-svelte 6.2.1`, `tailwindcss 4.3.3`, `@tailwindcss/vite 4.3.3`, `@sveltejs/adapter-static 3.0.10`.
 - **`src/components/GetDRNK.svelte`** y **`src/components/Vote4Dapp.svelte`**: se añadieron guardas para mostrar un mensaje claro si el contrato no está conectado, en lugar del error confuso.
 
+### Actualización a las últimas versiones (2026-09-10)
+
+Posteriormente se actualizó el proyecto a las últimas versiones disponibles a la fecha, verificando compatibilidad y build:
+
+- `svelte 5.57.0`, `ethers 6.17.0`, `vite 8.2.2`, `@sveltejs/vite-plugin-svelte 7.3.0`, `tailwindcss 4.3.3`, `@tailwindcss/vite 4.3.3`, `@sveltejs/adapter-static 3.0.10`.
+- Se validó la compatibilidad de peer dependencies (`@sveltejs/vite-plugin-svelte 7.3.0` exige `vite ^8` y `svelte ^5.46.4`; `@tailwindcss/vite 4.3.3` soporta `vite ^8`).
+- `bun run build` compila sin errores y el dev server arranca correctamente.
+- Se verificó que la API de `ethers 6.17.0` (`Contract`, `buyDRNK`, `drnk`, `voteDapp`, `balanceOf`, `symbol`, `decimals`) sigue disponible y que `$state` en `.svelte.js` se compila a `$.proxy` correctamente.
 
 **Qué NO generó la IA (contribución del equipo):**
 
