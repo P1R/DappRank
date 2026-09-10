@@ -1,5 +1,5 @@
 <script>
-  import { connectWallet, connectContract, connectTokenContract } from '../lib/ethers.svelte.js';
+  import { connectWallet, connectContract, connectTokenContract, refreshTokenBalance } from '../lib/ethers.svelte.js';
   import { ethVars } from '../lib/ethers.svelte.js';
 
   async function handleConnectWallet() {
@@ -23,6 +23,7 @@
             //console.log("conected contract on address:", ethVars.contractAddress);
             //console.log("token address:", ethVars.tokenContractAddress);
             ethVars.tokenContract = await connectTokenContract();
+            await refreshTokenBalance();
             //const symbol = await ethVars.tokenContract.symbol();
             //console.log("token symbol:", symbol);
         }

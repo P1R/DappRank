@@ -1,6 +1,6 @@
 <script>
-  import { ethVars } from '../lib/ethers.svelte.js';
-  import { parseEther } from 'ethers';
+  import { ethVars, refreshTokenBalance } from '../lib/ethers.svelte.js';
+  import { parseEther, formatUnits } from 'ethers';
 
     // State variables
     let showPopup = false;
@@ -8,14 +8,15 @@
     let isBuying = false;
     let transactionStatus = '';
     let error = '';
-    let tokenSymbol = '';
-    let tokenBalance = 0;
 
     async function buyTokens() {
-        //tokenBalance = await ethVars.tokenContract.balanceOf(ethVars.signerAddress);
-
         if (amount <= 0) {
             error = 'Please enter a valid amount';
+            return;
+        }
+
+        if (ethVars.contract === null) {
+            error = 'Please connect your wallet first to buy tokens.';
             return;
         }
 
@@ -30,12 +31,8 @@
             receipt = await tx.wait();
 
             console.log(receipt);
-            //if(receipt) {
-            //    showPopup = false;
-            //    transactionStatus = '';
-            //    error = '';
-            //    amount = 0;
-            //}
+            await refreshTokenBalance();
+            transactionStatus = 'Purchase successful!';
 
         } catch (err) {
             error = 'Transaction failed: ' + err.message;
@@ -52,10 +49,18 @@
         error = '';
         amount = 0;
     }
+
+    // Open popup and refresh the token balance if a wallet is connected
+    async function openPopup() {
+        if (ethVars.signerAddress) {
+            await refreshTokenBalance();
+        }
+        showPopup = true;
+    }
 </script>
 
 <div class="relative inline-block">
-    <button class="btn-neon text-base" on:click={() => showPopup = true}>
+    <button class="btn-neon text-base" on:click={openPopup}>
         Buy Tokens
     </button>
 
@@ -69,7 +74,11 @@
 
                 <div class="modal-body">
                     <div class="balance-info">
-                        <p>Your Balance: {tokenBalance} {tokenSymbol}</p>
+                        {#if ethVars.signerAddress}
+                            <p>Your Balance: {ethVars.tokenBalance === null ? '—' : formatUnits(ethVars.tokenBalance, ethVars.tokenDecimals)} {ethVars.tokenSymbol}</p>
+                        {:else}
+                            <p>Connect your wallet to see your balance</p>
+                        {/if}
                     </div>
 
                     <div class="field-group">
