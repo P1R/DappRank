@@ -34,12 +34,36 @@
       // Convert string dapp name to bytes32 for contract call
       const dappNameBytes32 = encodeBytes32String(dappName);
 
+      // _amount must be in the token's smallest unit (18 decimals, like ETH),
+      // so convert the DRNK amount with parseEther instead of a raw integer.
+      const amountWei = parseEther(amount.toString());
+
+      // voteDapp spends the user's DRNK via transferFrom, so the DappsManager
+      // contract must first be approved (allowance). This mirrors the approve
+      // step in test/DappsManager.t.sol::testVote4Dapp.
+      if (ethVars.tokenContract === null) {
+        throw new Error('Token contract not connected. Reconnect your wallet.');
+      }
+      const allowance = await ethVars.tokenContract.allowance(
+        ethVars.signerAddress,
+        ethVars.contractAddress,
+      );
+      if (allowance < amountWei) {
+        transactionStatus = 'Approving DRNK spend...';
+        const approval = await ethVars.tokenContract.approve(
+          ethVars.contractAddress,
+          amountWei,
+        );
+        await approval.wait();
+        transactionStatus = 'Processing transaction...';
+      }
+
       // Call the voteDapp function
-      let tx = await ethVars.contract.voteDapp(
+      const tx = await ethVars.contract.voteDapp(
         dappNameBytes32, // _name (converted to bytes32)
-        getBigInt(amount.toString()), // _amount
+        amountWei, // _amount (DRNK in wei units)
         getBigInt(rate), // _rate
-        options = { gasLimit: 1000000 }
+        { gasLimit: 1000000 } // overrides
       );
 
       const receipt = await tx.wait();
