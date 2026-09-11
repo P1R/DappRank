@@ -4,6 +4,7 @@
   import DappRankList from './components/DappRankList.svelte';
   import GetDRNK from './components/GetDRNK.svelte';
   import Vote4Dapp from './components/Vote4Dapp.svelte';
+  import RegisterDapp from './components/RegisterDapp.svelte';
 
   let menuOpen = $state(false);
 
@@ -58,7 +59,7 @@
       <Vote4Dapp />
       <GetDRNK />
       <DappsData />
-      <button class="btn-neon-pink">Add Dapp</button>
+      <RegisterDapp />
       <WalletConnector />
     </div>
 
@@ -88,7 +89,7 @@
       <Vote4Dapp />
       <GetDRNK />
       <DappsData />
-      <button class="btn-neon-pink w-full">Add Dapp</button>
+      <RegisterDapp />
       <WalletConnector />
     </div>
   {/if}
