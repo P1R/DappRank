@@ -1,6 +1,8 @@
 <script>
   import { connectWallet, connectContract, connectTokenContract, refreshTokenBalance, refreshDappsList } from '../lib/ethers.svelte.js';
   import { ethVars } from '../lib/ethers.svelte.js';
+  import { MorphIcon } from 'morphicons/svelte';
+  import { Wallet, WalletCards } from 'lucide';
 
   async function handleConnectWallet() {
     if (ethVars.signerAddress == null) {
@@ -14,7 +16,14 @@
             ethVars.isLoading = false;
         }
     } else {
+        // Disconnect: clear all wallet/contract state so the UI resets.
         ethVars.signerAddress = null;
+        ethVars.contract = null;
+        ethVars.tokenContract = null;
+        ethVars.tokenContractAddress = null;
+        ethVars.dappsList = [];
+        ethVars.tokenBalance = null;
+        ethVars.isLoading = false;
     }
   }
 
@@ -24,26 +33,28 @@
         if (contract) {
             ethVars.contract = contract;
             ethVars.tokenContractAddress = await contract.drnk();
-            //console.log("conected contract on address:", ethVars.contractAddress);
-            //console.log("token address:", ethVars.tokenContractAddress);
             ethVars.tokenContract = await connectTokenContract();
             await refreshTokenBalance();
-            //const symbol = await ethVars.tokenContract.symbol();
-            //console.log("token symbol:", symbol);
         }
-    } else {
-        ethVars.contract = null;
     }
   }
 </script>
 
 <div>
   {#if ethVars.signerAddress}
-    <button class="btn-neon font-mono" onclick={handleConnectWallet}>
-        {ethVars.signerAddress.slice(0, 6)
-        + '..' + ethVars.signerAddress.slice(-6)}
+    <button
+      class="btn-neon font-mono"
+      onclick={handleConnectWallet}
+      aria-label={`Disconnect wallet ${ethVars.signerAddress.slice(0, 6)}...${ethVars.signerAddress.slice(-6)}`}
+    >
+      <MorphIcon icon={WalletCards} spring="snappy" reducedMotion="user" aria-hidden="true" />
+      {ethVars.signerAddress.slice(0, 6)
+      + '..' + ethVars.signerAddress.slice(-6)}
     </button>
   {:else}
-    <button class="btn-neon" onclick={handleConnectWallet}>Connect Wallet</button>
+    <button class="btn-neon" onclick={handleConnectWallet}>
+      <MorphIcon icon={Wallet} spring="snappy" reducedMotion="user" aria-hidden="true" />
+      Connect Wallet
+    </button>
   {/if}
 </div>

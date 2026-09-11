@@ -24,15 +24,26 @@
         box-sizing: border-box;
     }
 
+    html {
+        scroll-behavior: smooth;
+    }
+
     body {
         @apply bg-void text-ink min-h-screen overflow-x-hidden relative font-sans;
+    }
+
+    /* Visible focus ring for keyboard users (WCAG 2.4.7) */
+    :focus-visible {
+        outline: 2px solid var(--color-neon-cyan);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 2px rgba(0, 247, 255, 0.35);
     }
 }
 
 @layer components {
-    /* Buttons */
+    /* Buttons — mobile-first: comfortable 44px touch targets */
     .btn-neon {
-        @apply cursor-pointer rounded-md border border-neon-cyan bg-void/70 px-4 py-2.5 text-sm font-semibold text-neon-cyan shadow-[0_0_10px_rgba(0,247,255,0.3)] transition-all duration-300;
+        @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-neon-cyan bg-void/70 px-4 text-sm font-semibold text-neon-cyan shadow-[0_0_10px_rgba(0,247,255,0.3)] transition-all duration-300;
     }
 
     .btn-neon:hover:not(:disabled) {
@@ -44,20 +55,34 @@
     }
 
     .btn-neon-pink {
-        @apply cursor-pointer rounded-md border border-neon-pink bg-neon-pink/10 px-4 py-2.5 text-sm font-semibold text-neon-pink shadow-[0_0_10px_rgba(255,0,204,0.3)] transition-all duration-300;
+        @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-neon-pink bg-neon-pink/10 px-4 text-sm font-semibold text-neon-pink shadow-[0_0_10px_rgba(255,0,204,0.3)] transition-all duration-300;
     }
 
-    .btn-neon-pink:hover {
+    .btn-neon-pink:hover:not(:disabled) {
         @apply -translate-y-0.5 bg-neon-pink/20 shadow-[0_0_15px_rgba(255,0,204,0.5)];
     }
 
-    /* Modal / popup */
+    .btn-neon-pink:disabled {
+        @apply cursor-not-allowed border-neon-pink/30 bg-void/50 text-neon-pink/50 shadow-none;
+    }
+
+    /* Icon-only button (square, 44px) */
+    .btn-icon {
+        @apply inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-md border border-neon-cyan bg-void/50 text-neon-cyan transition-all duration-300;
+    }
+
+    .btn-icon:hover:not(:disabled) {
+        @apply bg-neon-cyan/15 shadow-[0_0_12px_rgba(0,247,255,0.4)];
+    }
+
+    /* Modal / popup — mobile-first bottom sheet, centered dialog on md+ */
     .modal-overlay {
-        @apply fixed inset-0 z-1000 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm;
+        @apply fixed inset-0 z-1000 flex items-end justify-center bg-black/50 backdrop-blur-sm;
     }
 
     .modal-content {
-        @apply relative max-h-[90vh] w-full max-w-sm overflow-y-auto rounded-lg border border-neon-cyan bg-void/95 shadow-[0_0_20px_rgba(0,247,255,0.3)] backdrop-blur-md;
+        @apply relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-neon-cyan bg-void/95 shadow-[0_0_20px_rgba(0,247,255,0.3)] backdrop-blur-md;
+        animation: sheetIn 220ms ease-out;
     }
 
     .modal-header {
@@ -73,7 +98,7 @@
     }
 
     .modal-close {
-        @apply flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent text-2xl leading-none text-neon-cyan transition-transform duration-300;
+        @apply flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent text-2xl leading-none text-neon-cyan transition-transform duration-300;
     }
 
     .modal-close:hover {
@@ -90,7 +115,7 @@
     }
 
     .field-input {
-        @apply w-full rounded-md border border-neon-cyan bg-black/30 px-3 py-2.5 text-base text-white placeholder-white/40 outline-none transition-shadow duration-200;
+        @apply min-h-11 w-full rounded-md border border-neon-cyan bg-black/30 px-3 text-base text-white placeholder-white/40 outline-none transition-shadow duration-200;
     }
 
     .field-input:focus {
@@ -140,6 +165,47 @@
 
     .tier-badge-neutral {
         @apply inline-flex items-center gap-1.5 rounded-full border border-trust-neutral/40 bg-trust-neutral/10 px-2.5 py-1 text-xs font-semibold text-trust-neutral;
+    }
+}
+
+/* Desktop: center the modal instead of a bottom sheet */
+@media (min-width: 768px) {
+    .modal-overlay {
+        align-items: center;
+        padding: 1rem;
+    }
+
+    .modal-content {
+        max-width: 28rem; /* max-w-sm */
+        border-radius: 0.5rem; /* rounded-lg */
+    }
+}
+
+/* Skip link — first focusable element, jumps to main content (WCAG 2.4.1) */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 9999;
+}
+
+.skip-link:focus {
+    left: 0;
+    top: 0;
+    background: var(--color-neon-cyan);
+    color: #000;
+    padding: 0.75rem 1rem;
+    border-radius: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+/* Bottom-sheet entrance animation */
+@keyframes sheetIn {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
     }
 }
 
@@ -236,5 +302,26 @@
 @keyframes fillIn {
     from {
         width: 0;
+    }
+}
+
+/* Respect the user's motion preference (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+    .modal-content {
+        animation: none;
+    }
+
+    .bg-scene,
+    .particle,
+    .particles {
+        animation: none;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }

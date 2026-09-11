@@ -8,6 +8,8 @@
     refreshTokenBalance,
   } from '../lib/ethers.svelte.js';
   import { encodeBytes32String, parseEther, formatEther } from 'ethers';
+  import { MorphIcon } from 'morphicons/svelte';
+  import { Plus, Sparkles } from 'lucide';
 
   // State variables
   let showPopup = false;
@@ -25,6 +27,7 @@
   const FALLBACK_LISTING_FEE = parseEther('0.00001');
 
   let nameInput;
+  let connectButton;
 
   async function openPopup() {
     if (ethVars.signerAddress) {
@@ -33,7 +36,7 @@
     await loadContractFees();
     showPopup = true;
     // Move focus into the dialog for keyboard/screen-reader users
-    setTimeout(() => nameInput?.focus(), 50);
+    setTimeout(() => (nameInput ?? connectButton)?.focus(), 50);
   }
 
   async function loadContractFees() {
@@ -184,6 +187,7 @@
 
 <div class="relative inline-block">
   <button class="btn-neon-pink" on:click={openPopup}>
+    <MorphIcon icon={Plus} spring="snappy" reducedMotion="user" aria-hidden="true" />
     Add Dapp
   </button>
 
@@ -276,6 +280,7 @@
                 Connect your wallet to register a dapp on-chain.
               </p>
               <button
+                bind:this={connectButton}
                 class="btn-neon w-full py-3 text-base"
                 on:click={connectWalletFirst}
                 disabled={ethVars.isLoading}

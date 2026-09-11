@@ -69,4 +69,27 @@ Posteriormente se actualizó el proyecto a las últimas versiones disponibles a 
 
 ---
 
+## Cambios estéticos UI/UX (2026-09-11)
+
+### Contexto
+
+El agente de IA (DeepSeek en Zed) rediseñó la interfaz con enfoque **mobile-first** y mejoras de accesibilidad, dirigido por el equipo.
+
+### Cambios estéticos
+
+- **`src/app.css`**: tokens de tema en `@theme`, botones con targets táctiles de 44px, modales tipo _bottom sheet_ en móvil (centrados en desktop), anillo de foco visible (`:focus-visible`), soporte `prefers-reduced-motion` y _skip link_.
+- **`src/App.svelte`**: navegación semántica (`<nav>`), menú móvil accesible (`aria-expanded`/`aria-controls`) y _skip link_ a `#main-content`.
+- **`src/components/*`**: `role="dialog"`, `aria-modal`, `aria-labelledby`, `tabindex="-1"`, cierre con `Escape`, foco inicial en el primer campo, `role="status"`/`role="alert"` para feedback.
+- **`src/components/DappRankList.svelte`**: tarjetas semánticas (`<article>`/`<h2>`), enlaces descriptivos y regiones live.
+
+### Servicio MCP usado
+
+- **UX MCP Server** (análisis de accesibilidad WCAG AA, contraste, responsive, wireframes, microcopy, microinteracciones y heurísticas de usabilidad).
+- Repo: https://github.com/elsahafy/ux-mcp-server
+
+### Librería de iconos
+
+- **morphicons** (bindings Svelte 5) + **lucide** (datos de iconos): iconos reactivos con física de resorte y `reducedMotion="user"`.
+
+
 _Secciones adicionales se agregarán aquí cuando el equipo lo indique, especificando los archivos correspondientes._

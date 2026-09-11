@@ -1,6 +1,8 @@
 <script>
   import { ethVars, refreshTokenBalance } from '../lib/ethers.svelte.js';
   import { parseEther, formatUnits } from 'ethers';
+  import { MorphIcon } from 'morphicons/svelte';
+  import { Coins, DollarSign } from 'lucide';
 
     // State variables
     let showPopup = false;
@@ -8,6 +10,7 @@
     let isBuying = false;
     let transactionStatus = '';
     let error = '';
+    let amountInput;
 
     async function buyTokens() {
         if (amount <= 0) {
@@ -23,7 +26,6 @@
         try {
             isBuying = true;
             transactionStatus = 'Processing transaction...';
-
 
             let tx = await ethVars.contract.buyDRNK({
                 value: parseEther(amount.toString())
@@ -56,20 +58,39 @@
             await refreshTokenBalance();
         }
         showPopup = true;
+        setTimeout(() => amountInput?.focus(), 50);
+    }
+
+    function handleKeydown(e) {
+        if (e.key === 'Escape') closePopup();
     }
 </script>
 
 <div class="relative inline-block">
-    <button class="btn-neon text-base" on:click={openPopup}>
+    <button class="btn-neon" on:click={openPopup}>
+        <MorphIcon icon={Coins} spring="snappy" reducedMotion="user" aria-hidden="true" />
         Buy Tokens
     </button>
 
     {#if showPopup}
-        <div class="modal-overlay" on:click={closePopup} role="presentation">
-            <div class="modal-content w-full max-w-sm" on:click={(e) => e.stopPropagation()} role="presentation">
+        <div
+            class="modal-overlay"
+            on:click={closePopup}
+            on:keydown={handleKeydown}
+            role="presentation"
+        >
+            <div
+                class="modal-content"
+                on:click={(e) => e.stopPropagation()}
+                on:keydown={handleKeydown}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="buy-tokens-title"
+                tabindex="-1"
+            >
                 <div class="modal-header">
-                    <h3>Buy Tokens</h3>
-                    <button class="modal-close" on:click={closePopup}>×</button>
+                    <h3 id="buy-tokens-title">Buy Tokens</h3>
+                    <button class="modal-close" on:click={closePopup} aria-label="Close">×</button>
                 </div>
 
                 <div class="modal-body">
@@ -85,6 +106,7 @@
                         <label for="token-amount" class="field-label">Amount (ETH):</label>
                         <input
                             id="token-amount"
+                            bind:this={amountInput}
                             type="number"
                             min="0.01"
                             step="0.01"
@@ -103,11 +125,11 @@
                     </button>
 
                     {#if transactionStatus}
-                        <p class="status-msg">{transactionStatus}</p>
+                        <p class="status-msg" role="status">{transactionStatus}</p>
                     {/if}
 
                     {#if error}
-                        <p class="error-msg">{error}</p>
+                        <p class="error-msg" role="alert">{error}</p>
                     {/if}
                 </div>
             </div>

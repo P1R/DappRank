@@ -1,6 +1,8 @@
 <script>
   import { ethVars, refreshTokenBalance, refreshDappsList } from '../lib/ethers.svelte.js';
   import { parseEther, toUtf8String, formatUnits, encodeBytes32String, getBigInt } from 'ethers';
+  import { MorphIcon } from 'morphicons/svelte';
+  import { Vote, ThumbsUp } from 'lucide';
 
   // State variables
   let showPopup = false;
@@ -10,6 +12,7 @@
   let isVoting = false;
   let transactionStatus = '';
   let error = '';
+  let dappNameInput;
 
   async function voteDapp() {
     if (amount <= 0 || !dappName) {
@@ -107,20 +110,39 @@
       await refreshTokenBalance();
     }
     showPopup = true;
+    setTimeout(() => dappNameInput?.focus(), 50);
+  }
+
+  function handleKeydown(e) {
+    if (e.key === 'Escape') closePopup();
   }
 </script>
 
 <div class="relative inline-block">
-    <button class="btn-neon text-base" on:click={openPopup}>
+    <button class="btn-neon" on:click={openPopup}>
+        <MorphIcon icon={Vote} spring="snappy" reducedMotion="user" aria-hidden="true" />
         Vote on Dapps
     </button>
 
     {#if showPopup}
-        <div class="modal-overlay" on:click={closePopup} role="presentation">
-            <div class="modal-content w-full max-w-sm" on:click={(e) => e.stopPropagation()} role="presentation">
+        <div
+            class="modal-overlay"
+            on:click={closePopup}
+            on:keydown={handleKeydown}
+            role="presentation"
+        >
+            <div
+                class="modal-content"
+                on:click={(e) => e.stopPropagation()}
+                on:keydown={handleKeydown}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="vote-dapp-title"
+                tabindex="-1"
+            >
                 <div class="modal-header">
-                    <h3>Vote on Dapps</h3>
-                    <button class="modal-close" on:click={closePopup}>×</button>
+                    <h3 id="vote-dapp-title">Vote on Dapps</h3>
+                    <button class="modal-close" on:click={closePopup} aria-label="Close">×</button>
                 </div>
 
                 <div class="modal-body">
@@ -137,6 +159,7 @@
                             <label for="dapp-name" class="field-label">Dapp Name:</label>
                             <input
                                 id="dapp-name"
+                                bind:this={dappNameInput}
                                 type="text"
                                 bind:value={dappName}
                                 placeholder="Enter dapp name"
@@ -181,11 +204,11 @@
                         </button>
 
                         {#if transactionStatus}
-                            <p class="status-msg">{transactionStatus}</p>
+                            <p class="status-msg" role="status">{transactionStatus}</p>
                         {/if}
 
                         {#if error}
-                            <p class="error-msg">{error}</p>
+                            <p class="error-msg" role="alert">{error}</p>
                         {/if}
                     </div>
                 </div>

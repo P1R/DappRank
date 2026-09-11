@@ -113,11 +113,12 @@ export async function connectTokenContract() {
 // Shared so any component can trigger a refresh (e.g. after connecting
 // the wallet or after a successful vote) and the reactive view updates.
 export async function refreshDappsList() {
+  ethVars.isLoading = true;
   if (ethVars.contract === null) {
     ethVars.dappsList = [];
+    ethVars.isLoading = false;
     return;
   }
-  ethVars.isLoading = true;
   try {
     const dappsListNames = await ethVars.contract.getAllDappNames();
     const dapps = [];

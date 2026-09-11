@@ -5,11 +5,17 @@
   import GetDRNK from './components/GetDRNK.svelte';
   import Vote4Dapp from './components/Vote4Dapp.svelte';
   import RegisterDapp from './components/RegisterDapp.svelte';
+  import { MorphIcon } from 'morphicons/svelte';
+  import { Menu, X } from 'lucide';
 
   let menuOpen = $state(false);
 
   function toggleMenu() {
     menuOpen = !menuOpen;
+  }
+
+  function closeMenu() {
+    menuOpen = false;
   }
 
   $effect(() => {
@@ -41,61 +47,59 @@
   });
 </script>
 
-<header class="sticky top-0 z-[100] border-b-2 border-neon-cyan bg-void/80 px-4 py-4 shadow-[0_0_20px_rgba(0,247,255,0.3)] sm:px-6 lg:px-10">
-  <div class="mx-auto flex max-w-[1400px] items-center justify-between">
-    <div class="flex items-center gap-3">
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<header class="sticky top-0 z-[100] border-b-2 border-neon-cyan bg-void/80 px-4 py-3 shadow-[0_0_20px_rgba(0,247,255,0.3)] sm:px-6 lg:px-10">
+  <div class="mx-auto flex max-w-[1400px] items-center justify-between gap-3">
+    <div class="flex items-center gap-3" aria-label="DappRank home">
       <svg class="h-8 w-8 shrink-0 text-neon-pink drop-shadow-[0_0_6px_#ff00cc]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M12 2 2 7l10 5 10-5-10-5Z" />
         <path d="M2 17l10 5 10-5" />
         <path d="M2 12l10 5 10-5" />
       </svg>
-      <div class="bg-gradient-to-r from-neon-cyan to-neon-pink bg-clip-text text-2xl font-extrabold text-transparent drop-shadow-[0_0_10px_rgba(0,247,255,0.5)]">
+      <span class="bg-gradient-to-r from-neon-cyan to-neon-pink bg-clip-text text-2xl font-extrabold text-transparent drop-shadow-[0_0_10px_rgba(0,247,255,0.5)]">
         DappRank
-      </div>
+      </span>
     </div>
 
     <!-- Desktop controls -->
-    <div class="hidden flex-wrap items-center justify-end gap-3 md:flex">
+    <nav class="hidden flex-wrap items-center justify-end gap-2 md:flex" aria-label="Primary">
       <Vote4Dapp />
       <GetDRNK />
       <DappsData />
       <RegisterDapp />
       <WalletConnector />
-    </div>
+    </nav>
 
     <!-- Mobile menu toggle -->
     <button
-      class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-neon-cyan text-neon-cyan md:hidden"
+      class="btn-icon md:hidden"
       onclick={toggleMenu}
       aria-expanded={menuOpen}
-      aria-label="Toggle menu"
+      aria-controls="mobile-menu"
+      aria-label={menuOpen ? 'Close menu' : 'Open menu'}
     >
-      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        {#if menuOpen}
-          <path d="M18 6 6 18" />
-          <path d="M6 6l12 12" />
-        {:else}
-          <path d="M4 6h16" />
-          <path d="M4 12h16" />
-          <path d="M4 18h16" />
-        {/if}
-      </svg>
+      <MorphIcon icon={menuOpen ? X : Menu} spring="snappy" reducedMotion="user" />
     </button>
   </div>
 
   <!-- Mobile controls -->
   {#if menuOpen}
-    <div class="mx-auto mt-4 flex max-w-[1400px] flex-col items-stretch gap-3 md:hidden">
+    <nav
+      id="mobile-menu"
+      class="mx-auto mt-3 flex max-w-[1400px] flex-col items-stretch gap-2 md:hidden"
+      aria-label="Mobile"
+    >
       <Vote4Dapp />
       <GetDRNK />
       <DappsData />
       <RegisterDapp />
       <WalletConnector />
-    </div>
+    </nav>
   {/if}
 </header>
 
-<main class="relative text-center">
+<main id="main-content" class="relative text-center">
   <div class="bg-scene"></div>
   <div class="particles" id="particles"></div>
   <DappRankList />
