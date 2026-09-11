@@ -8,6 +8,7 @@
     import Vote4DappModal from "./components/Vote4DappModal.svelte";
     import GetDRNKModal from "./components/GetDRNKModal.svelte";
     import RegisterDappModal from "./components/RegisterDappModal.svelte";
+    import ThemeToggle from "./components/ThemeToggle.svelte";
     import { modalState, closeModal } from "./lib/modal.svelte.js";
     import { MorphIcon } from "morphicons/svelte";
     import { Menu, X } from "lucide";
@@ -110,34 +111,40 @@
             <WalletConnector />
         </nav>
 
-        <!-- Mobile menu toggle -->
-        <button
-            class="btn-icon md:hidden"
-            onclick={toggleMenu}
-            aria-expanded={menuOpen}
-            aria-controls="mobile-menu"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-        >
-            <MorphIcon
-                icon={menuOpen ? X : Menu}
-                spring="snappy"
-                reducedMotion="user"
-            />
-        </button>
+        <!-- Theme toggle + mobile menu toggle (always visible) -->
+        <div class="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+                class="btn-icon md:hidden"
+                onclick={toggleMenu}
+                aria-expanded={menuOpen}
+                aria-controls="mobile-menu"
+                aria-label={menuOpen ? "Close menu" : "Open menu"}
+            >
+                <MorphIcon
+                    icon={menuOpen ? X : Menu}
+                    spring="snappy"
+                    reducedMotion="user"
+                />
+            </button>
+        </div>
     </div>
 
-    <!-- Mobile controls -->
+    <!-- Mobile controls: 2-column grid for the action buttons, wallet full-width.
+         Buttons stretch to fill their cell via .mobile-menu button { width: 100% }. -->
     {#if menuOpen}
         <nav
             id="mobile-menu"
-            class="mx-auto mt-3 flex max-w-350 flex-col items-stretch gap-2 md:hidden"
+            class="mobile-menu mx-auto mt-3 grid max-w-350 grid-cols-2 gap-2 md:hidden"
             aria-label="Mobile"
         >
             <Vote4Dapp />
             <GetDRNK />
             <DappsData />
             <RegisterDapp />
-            <WalletConnector />
+            <div class="col-span-2">
+                <WalletConnector />
+            </div>
         </nav>
     {/if}
 </header>

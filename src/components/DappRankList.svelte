@@ -233,7 +233,7 @@
                     class="mt-1 h-1.5 overflow-hidden rounded-full bg-black/30"
                 >
                     <div
-                        class="h-full rounded-full bg-linear-to-r from-[#00ffcc] to-[#ff00ff]"
+                        class="h-full rounded-full bg-linear-to-r from-neon-cyan to-neon-pink"
                         style="width: {item.consensusPct}%"
                     ></div>
                 </div>
