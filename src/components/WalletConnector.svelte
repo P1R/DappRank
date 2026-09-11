@@ -1,13 +1,17 @@
 <script>
-  import { connectWallet, connectContract, connectTokenContract, refreshTokenBalance } from '../lib/ethers.svelte.js';
+  import { connectWallet, connectContract, connectTokenContract, refreshTokenBalance, refreshDappsList } from '../lib/ethers.svelte.js';
   import { ethVars } from '../lib/ethers.svelte.js';
 
   async function handleConnectWallet() {
     if (ethVars.signerAddress == null) {
+        ethVars.isLoading = true;
         const address = await connectWallet();
         if (address) {
             ethVars.signerAddress = address;
             await handleConnectcontract();
+            await refreshDappsList();
+        } else {
+            ethVars.isLoading = false;
         }
     } else {
         ethVars.signerAddress = null;

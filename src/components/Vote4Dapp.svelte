@@ -1,5 +1,5 @@
 <script>
-  import { ethVars, refreshTokenBalance } from '../lib/ethers.svelte.js';
+  import { ethVars, refreshTokenBalance, refreshDappsList } from '../lib/ethers.svelte.js';
   import { parseEther, toUtf8String, formatUnits, encodeBytes32String, getBigInt } from 'ethers';
 
   // State variables
@@ -70,6 +70,7 @@
       console.log(receipt);
 
       await refreshTokenBalance();
+      await refreshDappsList();
       transactionStatus = 'Vote submitted successfully!';
 
       // Reset form after successful vote

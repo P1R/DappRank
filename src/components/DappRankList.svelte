@@ -71,7 +71,13 @@
   let totalBurned = $derived(rawData.reduce((sum, d) => sum + d.tokensBurned, 0));
 </script>
 
-{#if data.length > 0}
+{#if ethVars.isLoading}
+  <div class="mx-auto my-12 max-w-md rounded-xl border border-neon-cyan/20 bg-void/60 p-8 text-center shadow-[0_0_15px_rgba(0,247,255,0.15)]">
+    <div class="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-neon-cyan/30 border-t-neon-cyan"></div>
+    <p class="text-lg font-semibold text-neon-cyan">Loading ranking…</p>
+    <p class="mt-1 text-sm opacity-80">Fetching the latest data from the contract.</p>
+  </div>
+{:else if data.length > 0}
   <div class="mx-auto max-w-[1400px] px-4 pt-6 sm:px-6">
     <div class="mx-auto flex w-fit items-center gap-2 rounded-full border border-neon-pink/40 bg-neon-pink/10 px-5 py-2 text-sm font-semibold text-neon-pink shadow-[0_0_15px_rgba(255,0,204,0.25)]">
       <span aria-hidden="true">🔥</span>

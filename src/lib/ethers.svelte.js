@@ -19,6 +19,7 @@ export const ethVars = $state({
   tokenContract: null,
   tokenContractAddress: null,
   dappsList: [],
+  isLoading: false,
   tokenBalance: null,
   tokenSymbol: "DRNK",
   tokenDecimals: 18,
@@ -105,6 +106,52 @@ export async function connectTokenContract() {
   } catch (error) {
     console.error("Failed to connect contract:", error);
     throw error;
+  }
+}
+
+// Reload the full dapps list from the DappsManager contract.
+// Shared so any component can trigger a refresh (e.g. after connecting
+// the wallet or after a successful vote) and the reactive view updates.
+export async function refreshDappsList() {
+  if (ethVars.contract === null) {
+    ethVars.dappsList = [];
+    return;
+  }
+  ethVars.isLoading = true;
+  try {
+    const dappsListNames = await ethVars.contract.getAllDappNames();
+    const dapps = [];
+    for (const name of dappsListNames) {
+      const info = await getDappInfoForName(name);
+      if (info) {
+        dapps.push(info);
+      }
+    }
+    ethVars.dappsList = dapps;
+  } catch (error) {
+    console.error("Failed to refresh dapps list:", error);
+  } finally {
+    ethVars.isLoading = false;
+  }
+}
+
+async function getDappInfoForName(dappName) {
+  try {
+    const info = await ethVars.contract.getDappInfo(dappName);
+    return {
+      name: dappName,
+      cid: info.cid,
+      rate: info.rate.toString(), // Convert to string for better handling
+      weight_votes_sum: info.weight_votes_sum.toString(),
+      weight_total_sum: info.weight_total_sum.toString(),
+      balance: info.balance.toString(),
+      burned: info.burned.toString(),
+      owner: info.owner,
+      status: info.status,
+    };
+  } catch (error) {
+    console.error(`Error getting info for dapp ${dappName}:`, error);
+    return null;
   }
 }
 
