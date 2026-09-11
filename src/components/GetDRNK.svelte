@@ -28,7 +28,7 @@
             let tx = await ethVars.contract.buyDRNK({
                 value: parseEther(amount.toString())
             });
-            receipt = await tx.wait();
+            let receipt = await tx.wait();
 
             console.log(receipt);
             await refreshTokenBalance();
