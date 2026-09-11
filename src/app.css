@@ -41,52 +41,55 @@
 }
 
 @layer components {
-    /* Buttons — mobile-first: comfortable 44px touch targets */
+    /* Buttons — mobile-first: comfortable 44px touch targets.
+       Clean: subtle border, no glow, color reserved for meaning. */
     .btn-neon {
-        @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-neon-cyan bg-void/70 px-4 text-sm font-semibold text-neon-cyan shadow-[0_0_10px_rgba(0,247,255,0.3)] transition-all duration-300;
+        @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-neon-cyan/40 bg-void/70 px-4 text-sm font-semibold text-neon-cyan transition-colors duration-200;
     }
 
     .btn-neon:hover:not(:disabled) {
-        @apply -translate-y-0.5 bg-neon-cyan/20 shadow-[0_0_15px_rgba(0,247,255,0.5)];
+        @apply bg-neon-cyan/15;
     }
 
     .btn-neon:disabled {
-        @apply cursor-not-allowed border-neon-cyan/30 bg-void/50 text-neon-cyan/50 shadow-none;
+        @apply cursor-not-allowed border-neon-cyan/20 bg-void/50 text-neon-cyan/40;
     }
 
     .btn-neon-pink {
-        @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-neon-pink bg-neon-pink/10 px-4 text-sm font-semibold text-neon-pink shadow-[0_0_10px_rgba(255,0,204,0.3)] transition-all duration-300;
+        @apply inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-neon-pink/40 bg-neon-pink/10 px-4 text-sm font-semibold text-neon-pink transition-colors duration-200;
     }
 
     .btn-neon-pink:hover:not(:disabled) {
-        @apply -translate-y-0.5 bg-neon-pink/20 shadow-[0_0_15px_rgba(255,0,204,0.5)];
+        @apply bg-neon-pink/20;
     }
 
     .btn-neon-pink:disabled {
-        @apply cursor-not-allowed border-neon-pink/30 bg-void/50 text-neon-pink/50 shadow-none;
+        @apply cursor-not-allowed border-neon-pink/20 bg-void/50 text-neon-pink/40;
     }
 
     /* Icon-only button (square, 44px) */
     .btn-icon {
-        @apply inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-md border border-neon-cyan bg-void/50 text-neon-cyan transition-all duration-300;
+        @apply inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-md border border-neon-cyan/40 bg-void/50 text-neon-cyan transition-colors duration-200;
     }
 
     .btn-icon:hover:not(:disabled) {
-        @apply bg-neon-cyan/15 shadow-[0_0_12px_rgba(0,247,255,0.4)];
+        @apply bg-neon-cyan/15;
     }
 
-    /* Modal / popup — mobile-first bottom sheet, centered dialog on md+ */
+    /* Modal / popup — mobile-first bottom sheet, centered dialog on md+.
+       Responsive behavior via @apply variants (Tailwind emits proper media
+       queries), NOT top-level @media blocks which get flattened. */
     .modal-overlay {
-        @apply fixed inset-0 z-1000 flex items-end justify-center bg-black/50 backdrop-blur-sm;
+        @apply fixed inset-0 z-1000 flex items-end justify-center bg-black/50 backdrop-blur-sm md:items-center md:p-4;
     }
 
     .modal-content {
-        @apply relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-neon-cyan bg-void/95 shadow-[0_0_20px_rgba(0,247,255,0.3)] backdrop-blur-md;
-        animation: sheetIn 220ms ease-out;
+        @apply relative max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-neon-cyan/40 bg-void/95 shadow-xl backdrop-blur-md md:max-w-sm md:rounded-lg;
+        animation: modalFade 200ms ease-out;
     }
 
     .modal-header {
-        @apply flex items-center justify-between border-b border-neon-cyan px-5 pb-3 pt-5;
+        @apply sticky top-0 z-10 flex items-center justify-between border-b border-neon-cyan bg-void/95 px-5 pb-3 pt-5;
     }
 
     .modal-header h3 {
@@ -146,6 +149,18 @@
         @apply text-center text-sm font-medium text-red-400;
     }
 
+    /* Page container — consistent mobile-first gutters (DappRadar/DeFiLlama pattern).
+       Applied once on <main> so every child respects the same horizontal rhythm
+       instead of each container deciding its own padding. */
+    .page-gutter {
+        @apply px-5 sm:px-6 lg:px-8 xl:px-10;
+    }
+
+    /* Responsive table — overflow container (no persistent edge shadow) */
+    .table-scroll {
+        @apply relative overflow-x-auto;
+    }
+
     /* Neon pill tag */
     .neon-tag {
         @apply rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-3 py-1 text-xs text-neon-cyan;
@@ -168,19 +183,6 @@
     }
 }
 
-/* Desktop: center the modal instead of a bottom sheet */
-@media (min-width: 768px) {
-    .modal-overlay {
-        align-items: center;
-        padding: 1rem;
-    }
-
-    .modal-content {
-        max-width: 28rem; /* max-w-sm */
-        border-radius: 0.5rem; /* rounded-lg */
-    }
-}
-
 /* Skip link — first focusable element, jumps to main content (WCAG 2.4.1) */
 .skip-link {
     position: absolute;
@@ -199,85 +201,31 @@
     font-weight: 600;
 }
 
-/* Bottom-sheet entrance animation */
-@keyframes sheetIn {
+/* Modal entrance — subtle fade (no transform, so it never fights the centering) */
+@keyframes modalFade {
     from {
-        transform: translateY(100%);
+        opacity: 0;
     }
     to {
-        transform: translateY(0);
+        opacity: 1;
     }
 }
 
-/* Animated background */
+/* Static background — clean, no distracting motion */
 .bg-scene {
     position: fixed;
     inset: 0;
     z-index: -1;
-    background:
-        radial-gradient(
-            circle at 10% 20%,
-            rgba(100, 0, 255, 0.1) 0%,
-            transparent 20%
-        ),
-        radial-gradient(
-            circle at 90% 80%,
-            rgba(255, 0, 150, 0.1) 0%,
-            transparent 20%
-        ),
-        linear-gradient(135deg, var(--color-void) 0%, var(--color-deep) 100%);
-    background-size: 200% 200%;
-    animation: bgAnimation 30s infinite alternate;
+    background: linear-gradient(
+        135deg,
+        var(--color-void) 0%,
+        var(--color-deep) 100%
+    );
 }
 
-@keyframes bgAnimation {
-    0% {
-        background-position: 0% 0%;
-    }
-    25% {
-        background-position: 100% 100%;
-    }
-    50% {
-        background-position: 100% 0%;
-    }
-    75% {
-        background-position: 0% 100%;
-    }
-    100% {
-        background-position: 0% 0%;
-    }
-}
-
-/* Floating particles */
-.particles {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-}
-
-.particle {
-    position: absolute;
-    background: rgba(100, 200, 255, 0.5);
-    border-radius: 50%;
-    animation: float 15s infinite linear;
-}
-
-@keyframes float {
-    0% {
-        transform: translateY(0) translateX(0) rotate(0deg);
-        opacity: 0;
-    }
-    10% {
-        opacity: 1;
-    }
-    90% {
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(-100vh) translateX(100px) rotate(360deg);
-        opacity: 0;
-    }
+/* Subtle card depth (used by mobile cards) */
+.card {
+    @apply rounded-xl border border-neon-cyan/25 bg-void/70 shadow-md;
 }
 
 /* Shared gradient/shine accents used by cards & rating bars */
@@ -308,12 +256,6 @@
 /* Respect the user's motion preference (WCAG 2.3.3) */
 @media (prefers-reduced-motion: reduce) {
     .modal-content {
-        animation: none;
-    }
-
-    .bg-scene,
-    .particle,
-    .particles {
         animation: none;
     }
 

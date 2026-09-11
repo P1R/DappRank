@@ -10,6 +10,36 @@ const contractAddress =
 const DappsManagerABI = compiledDappsManager.abi;
 const tokenContractABI = compiledTokenContract.abi;
 
+/**
+ * @typedef {Object} DappInfo
+ * @property {string} name
+ * @property {string} cid
+ * @property {string} rate
+ * @property {string} weight_votes_sum
+ * @property {string} weight_total_sum
+ * @property {string} balance
+ * @property {string} burned
+ * @property {string} owner
+ * @property {string} status
+ */
+
+/**
+ * @typedef {Object} EthVarsState
+ * @property {ethers.BrowserProvider | null} provider
+ * @property {ethers.JsonRpcSigner | null} signer
+ * @property {string | null} signerAddress
+ * @property {string} contractAddress
+ * @property {ethers.Contract | null} contract
+ * @property {ethers.Contract | null} tokenContract
+ * @property {string | null} tokenContractAddress
+ * @property {DappInfo[]} dappsList
+ * @property {boolean} isLoading
+ * @property {bigint | null} tokenBalance
+ * @property {string} tokenSymbol
+ * @property {number} tokenDecimals
+ */
+
+/** @type {EthVarsState} */
 export const ethVars = $state({
   provider: null,
   signer: null,
@@ -28,7 +58,7 @@ export const ethVars = $state({
 export async function connectWallet() {
   if (typeof window.ethereum === "undefined") {
     alert("Please install a Web3 wallet like MetaMask.");
-    return;
+    return null;
   }
 
   try {
@@ -49,15 +79,15 @@ export async function connectWallet() {
 export async function connectContract() {
   if (typeof window.ethereum === "undefined") {
     alert("Please install a Web3 wallet like MetaMask.");
-    return;
+    return null;
   }
   if (ethVars.contractAddress === null) {
     alert("Error reading smart contract address, verify the chain or .env");
-    return;
+    return null;
   }
   if (ethVars.signer === null) {
     alert("ensure there is a signer by connecting the wallet");
-    return;
+    return null;
   }
 
   try {
@@ -76,15 +106,15 @@ export async function connectContract() {
 export async function connectTokenContract() {
   if (typeof window.ethereum === "undefined") {
     alert("Please install a Web3 wallet like MetaMask.");
-    return;
+    return null;
   }
   if (ethVars.contract === null) {
     alert("Error reading smart contract address, verify the chain or .env");
-    return;
+    return null;
   }
   if (ethVars.signer === null) {
     alert("ensure there is a signer by connecting the wallet");
-    return;
+    return null;
   }
   if (ethVars.tokenContractAddress === null) {
     try {
@@ -96,8 +126,13 @@ export async function connectTokenContract() {
   }
 
   try {
+    const tokenAddress = ethVars.tokenContractAddress;
+    if (tokenAddress === null) {
+      alert("Error reading token contract address, verify the chain or .env");
+      return null;
+    }
     ethVars.tokenContract = new ethers.Contract(
-      ethVars.tokenContractAddress,
+      tokenAddress,
       tokenContractABI,
       ethVars.signer,
     );
@@ -136,7 +171,9 @@ export async function refreshDappsList() {
   }
 }
 
+/** @param {string} dappName */
 async function getDappInfoForName(dappName) {
+  if (ethVars.contract === null) return null;
   try {
     const info = await ethVars.contract.getDappInfo(dappName);
     return {

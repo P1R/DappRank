@@ -91,5 +91,27 @@ El agente de IA (DeepSeek en Zed) rediseñó la interfaz con enfoque **mobile-fi
 
 - **morphicons** (bindings Svelte 5) + **lucide** (datos de iconos): iconos reactivos con física de resorte y `reducedMotion="user"`.
 
+---
+
+## Correcciones y mejoras (2026-09-11)
+
+### Refactor de modales
+
+- **`src/lib/modal.svelte.js`** (nuevo): estado compartido del modal (`openModal`/`closeModal`).
+- **`src/App.svelte`**: los modales se renderizan en la **raíz** (fuera del header), evitando que `transform`/`filter`/`backdrop-filter` de un ancestro rompan el `position: fixed`. Añade cierre con `Escape`, _focus trap_ (Tab) y cierre del menú móvil al abrir un modal.
+- **`src/components/{Vote4Dapp,GetDRNK,RegisterDapp}.svelte`**: quedan como botones que abren el modal.
+- **`src/components/*Modal.svelte`** (nuevos): contienen el formulario de cada acción.
+
+### Tipado (JSDoc, sin `any`)
+
+- **`src/lib/ethers.svelte.js`**: typedefs `EthVarsState`/`DappInfo`; `contract`/`tokenContract` tipados como `ethers.Contract | null`; `return null` en guards; guards de null en `getDappInfoForName`.
+- **`src/globals.d.ts`** (nuevo): declara `window.ethereum` (EIP-1193).
+- **`src/components/*Modal.svelte`** y **`DappRankList.svelte`**: refs `bind:this` tipados, parámetros tipados, `Record<Tier, string>` para los mapas de tier.
+
+### Mejora UX
+
+- **`src/components/WalletConnector.svelte`**: estado de carga visible (morph a `LoaderCircle` girando + "Connecting…", botón deshabilitado, `aria-busy`) y `isLoading` siempre reseteado con `finally`.
+
+---
 
 _Secciones adicionales se agregarán aquí cuando el equipo lo indique, especificando los archivos correspondientes._
