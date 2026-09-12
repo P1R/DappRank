@@ -1,8 +1,9 @@
 <script>
     import { ethVars } from "../lib/ethers.svelte.js";
+    import { openVoteModal } from "../lib/modal.svelte.js";
     import { toUtf8String, formatUnits } from "ethers";
     import { MorphIcon } from "morphicons/svelte";
-    import { Trophy, Flame, CircleCheck } from "lucide";
+    import { Trophy, Flame, CircleCheck, Vote } from "lucide";
 
     /** @typedef {'high' | 'mid' | 'low' | 'neutral'} Tier */
 
@@ -66,6 +67,7 @@
                 name: dapp.name
                     ? stripNulls(toUtf8String(dapp.name))
                     : "Unknown DApp",
+                rawName: dapp.name,
                 url: dapp.cid ? `https://ipfs.io/ipfs/${dapp.cid}` : "#",
                 rating,
                 tier: ratingTier(rating),
@@ -241,6 +243,14 @@
                 <div class="mt-3 text-xs opacity-60">
                     Owner: {item.owner.slice(0, 6)}...{item.owner.slice(-4)}
                 </div>
+
+                <button
+                    class="btn-neon mt-3 w-full py-2 text-sm"
+                    onclick={() => openVoteModal(item.rawName)}
+                >
+                    <MorphIcon icon={Vote} class="h-4 w-4" aria-hidden="true" />
+                    Vote
+                </button>
             </article>
         {/each}
     </div>
@@ -268,6 +278,7 @@
                         >Backing</th
                     >
                     <th scope="col" class="px-3 py-3 font-semibold">Status</th>
+                    <th scope="col" class="px-3 py-3 font-semibold">Vote</th>
                 </tr>
             </thead>
             <tbody>
@@ -351,6 +362,14 @@
                                 ></span>
                                 {item.status}
                             </span>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <button
+                                class="btn-neon px-3 py-1.5 text-xs"
+                                onclick={() => openVoteModal(item.rawName)}
+                            >
+                                Vote
+                            </button>
                         </td>
                     </tr>
                 {/each}

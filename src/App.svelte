@@ -3,7 +3,6 @@
     import DappsData from "./components/DappsData.svelte";
     import DappRankList from "./components/DappRankList.svelte";
     import GetDRNK from "./components/GetDRNK.svelte";
-    import Vote4Dapp from "./components/Vote4Dapp.svelte";
     import RegisterDapp from "./components/RegisterDapp.svelte";
     import Vote4DappModal from "./components/Vote4DappModal.svelte";
     import GetDRNKModal from "./components/GetDRNKModal.svelte";
@@ -104,7 +103,6 @@
             class="hidden flex-wrap items-center justify-end gap-2 md:flex"
             aria-label="Primary"
         >
-            <Vote4Dapp />
             <GetDRNK />
             <DappsData />
             <RegisterDapp />
@@ -138,7 +136,6 @@
             class="mobile-menu mx-auto mt-3 grid max-w-350 grid-cols-2 gap-2 md:hidden"
             aria-label="Mobile"
         >
-            <Vote4Dapp />
             <GetDRNK />
             <DappsData />
             <RegisterDapp />

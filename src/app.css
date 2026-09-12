@@ -147,7 +147,7 @@
     }
 
     .field-input {
-        @apply min-h-11 w-full rounded-md border border-neon-cyan bg-black/30 px-3 text-base text-white placeholder-white/40 outline-none transition-shadow duration-200;
+        @apply min-h-11 w-full rounded-md border border-neon-cyan bg-void/70 px-3 text-base text-ink placeholder-ink/40 outline-none transition-shadow duration-200;
     }
 
     .field-input:focus {
@@ -165,6 +165,46 @@
 
     .field-slider::-moz-range-thumb {
         @apply h-5 w-5 cursor-pointer appearance-none rounded-full border-0 bg-neon-cyan;
+    }
+
+    /* Custom dropdown (combobox) — same geometry and focus language as
+       .field-input, but theme-aware (text-ink) and with a neon listbox. */
+    .neon-select {
+        @apply relative;
+    }
+
+    .neon-select-trigger {
+        @apply flex min-h-11 w-full cursor-pointer items-center justify-between gap-2 rounded-md border border-neon-cyan bg-void/70 px-3 text-base text-ink outline-none transition-shadow duration-200;
+    }
+
+    .neon-select-trigger:focus-visible {
+        box-shadow: 0 0 0 2px
+            color-mix(in srgb, var(--color-neon-cyan) 35%, transparent);
+    }
+
+    .neon-select-trigger:disabled {
+        @apply cursor-not-allowed border-neon-cyan/20 bg-void/50 text-ink/40;
+    }
+
+    .neon-select-value {
+        @apply truncate;
+    }
+
+    .neon-select-list {
+        @apply absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-neon-cyan/40 bg-void/95 shadow-xl backdrop-blur-md;
+    }
+
+    .neon-select-option {
+        @apply flex min-h-10 cursor-pointer items-center gap-2 rounded-sm px-3 text-sm text-ink transition-colors duration-100;
+    }
+
+    .neon-select-option:hover,
+    .neon-select-option-active {
+        @apply bg-neon-cyan/15 text-neon-cyan;
+    }
+
+    .neon-select-option-selected {
+        @apply font-semibold;
     }
 
     .balance-info {

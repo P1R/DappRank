@@ -90,3 +90,50 @@ if (allowance < amountWei) {
 > **Nota de comportamiento:** cada `voteDapp` gasta `_amount` de la allowance (la
 > consume el `transferFrom` interno), por lo que la aprobación debe repetirse cuando
 > se quiera volver a votar con el mismo o mayor importe.
+
+---
+
+## Bug 2 — Reverts silenciosos en `voteDapp` (imposible diagnosticar desde la UI)
+
+**Estado: corregido en `src-sc/DappsManager.sol` (requiere re-deploy) + mitigado en la UI**
+
+### Síntoma
+
+Al votar, la transacción se revierte con un error críptico sin razón:
+
+```
+Transaction failed: transaction execution reverted (action="sendTransaction",
+data=null, reason=null, ..., "data": "", ..., "status": 0, ...)
+```
+
+`data: ""` indica un `require` **sin mensaje** — ethers no puede decodificar la causa.
+
+### Causa raíz
+
+`voteDapp()` en `src-sc/DappsManager.sol` tenía 4 `require` sin mensaje:
+
+```solidity
+require(DappNameExists(_name));                                  // 1
+require(drnk.balanceOf(msg.sender) > 0);                         // 2
+require(drnk.allowance(msg.sender, address(this)) >= _amount);   // 3
+require(_rate > 0 && _rate <= 100);                              // 4
+```
+
+Cualquiera de ellos revierte en silencio. En la práctica, el caso más común es el
+**#2 (saldo de DRNK = 0)**: la UI enviaba la aprobación (`approve`) y después
+`voteDapp`, pero nunca comprobaba que el usuario tuviera tokens.
+
+### Solución aplicada
+
+1. **Contrato** (`src-sc/DappsManager.sol`): mensajes en los 4 `require` +
+   mensaje en el `require` silencioso de `buyDRNK` (`Top-up window expired`).
+   Requiere re-deploy en Sepolia para que aplique en producción.
+2. **Frontend** (`src/components/Vote4DappModal.svelte`): chequeos previos
+   (pre-flight) antes de enviar cualquier transacción — funciona ya con el
+   contrato desplegado:
+   - `balanceOf > 0` → "No tienes DRNK…"
+   - `balance >= amount` → "Saldo insuficiente…"
+   - `fanIsAlive` → "Tu cuenta de fan no está activa…"
+   - `DappNameIsActive` → "Esta dApp no está activa…"
+3. El dropdown de dApps ahora solo lista dApps con estado `Active` (las demás no
+   pueden recibir votos).
