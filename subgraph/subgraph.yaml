@@ -1,0 +1,46 @@
+specVersion: 1.0.0
+description: DappRank — dApp ranking with Square Root Weighted Voting (SRWV)
+repository: https://github.com/P1R/DappRank
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: DappsManager
+    network: sepolia
+    source:
+      # TODO: replace with the NEW DappsManager address after redeploying the
+      # contract with events (the current Sepolia deployment emits no events).
+      address: "0x0000000000000000000000000000000000000000"
+      abi: DappsManager
+      # TODO: set to the block where the new contract was deployed to avoid
+      # indexing the whole chain (e.g. 7000000).
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Dapp
+        - Vote
+        - GlobalStat
+      abis:
+        - name: DappsManager
+          file: ./abis/DappsManager.json
+      eventHandlers:
+        - event: DappRegistered(indexed bytes32,indexed address,string)
+          handler: handleDappRegistered
+        - event: DappApproved(indexed bytes32)
+          handler: handleDappApproved
+        - event: DappBanned(indexed bytes32)
+          handler: handleDappBanned
+        - event: VoteCast(indexed bytes32,indexed address,uint256,uint256,uint256,uint256)
+          handler: handleVoteCast
+        - event: TokensBurned(indexed bytes32,uint256)
+          handler: handleTokensBurned
+        - event: DappCashOut(indexed bytes32,indexed address,uint256)
+          handler: handleDappCashOut
+        - event: DappRemoved(indexed bytes32)
+          handler: handleDappRemoved
+        - event: DappCIDUpdated(indexed bytes32,string)
+          handler: handleDappCIDUpdated
+      file: ./src/mapping.ts

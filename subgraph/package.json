@@ -1,0 +1,18 @@
+{
+  "name": "dapprank-subgraph",
+  "private": true,
+  "version": "0.0.1",
+  "description": "DappRank subgraph — indexes DappsManager events on Sepolia for The Graph",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --studio dapprank",
+    "create-local": "graph create --node http://localhost:8020 dapprank",
+    "remove-local": "graph remove --node http://localhost:8020 dapprank",
+    "deploy-local": "graph deploy --node http://localhost:8020 --ipfs http://localhost:5001 dapprank"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "^0.95.0",
+    "@graphprotocol/graph-ts": "^0.36.0"
+  }
+}
