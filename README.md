@@ -8,9 +8,9 @@ Status Deployet at Sepolia:
 
 Web3/ipfs: bafybeihx27kivfu7tgvj7llxnid26yqn7j5w3jhugpoeb6odys636lcm5q
 
-Dapps contract address is: [0xD60DC0805f44d10cAc6594f1a501c67929448957](https://sepolia.etherscan.io/address/0xD60DC0805f44d10cAc6594f1a501c67929448957)
+Dapps contract address is: [0x428960cB8C32f3Ac6303517FA4A8D0A73E62Effd](https://sepolia.etherscan.io/address/0x428960cB8C32f3Ac6303517FA4A8D0A73E62Effd)
 
-DRNK Token contract address is: [0x00687D35C43d961BA2492f2808de904FCE93b911](https://sepolia.etherscan.io/address/0x00687D35C43d961BA2492f2808de904FCE93b911)
+DRNK Token contract address is: [0x9772986A2d4cAD7023C7Fb04990dd66D1fB23420](https://sepolia.etherscan.io/address/0x9772986A2d4cAD7023C7Fb04990dd66D1fB23420)
 
 The DappRank DeFi model introduces a revolutionary decentralized ranking system
 for dapps using a novel voting mechanism called Square Root Weighted Voting
