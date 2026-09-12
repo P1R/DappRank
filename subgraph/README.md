@@ -30,7 +30,7 @@ razonamiento en lenguaje natural sobre los datos indexados.
 - Una cuenta en [Subgraph Studio](https://thegraph.com/studio/) con un subgraph
   creado (slug `dapprank` o el que uses)
 - El contrato **redeployado** en Sepolia con eventos (el despliegue actual
-  `0xD60DC0805f44d10cAc6594f1a501c67929448957` NO emite eventos)
+  `0x428960cB8C32f3Ac6303517FA4A8D0A73E62Effd` NO emite eventos)
 
 ## Pasos de despliegue
 

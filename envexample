@@ -11,7 +11,7 @@ DAOFEE=100
 BONUS=1000000000000000000000
 
 # Deployed contract
-VITE_SMARTCONTRACTADDRS="0xD60DC0805f44d10cAc6594f1a501c67929448957"
+VITE_SMARTCONTRACTADDRS="0x428960cB8C32f3Ac6303517FA4A8D0A73E62Effd"
 
 # The Graph subgraph endpoint (Subgraph Studio). Set after deploying the subgraph.
 # Format: https://api.studio.thegraph.com/query/<SLUG>/<VERSION>
