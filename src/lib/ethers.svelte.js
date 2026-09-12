@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import compiledDappsManager from "../../out/DappsManager.sol/DappsManager.json";
 import compiledTokenContract from "../../out/DRNK.sol/DappRank.json";
+import { fetchDappsFromSubgraph } from "./subgraph.svelte.js";
 
 // The DappsManager contract is already deployed on Sepolia testnet.
 // Fall back to the deployed address when no VITE_SMARTCONTRACTADDRS is provided (e.g. no .env).
@@ -33,6 +34,7 @@ const tokenContractABI = compiledTokenContract.abi;
  * @property {ethers.Contract | null} tokenContract
  * @property {string | null} tokenContractAddress
  * @property {DappInfo[]} dappsList
+ * @property {'subgraph' | 'contract'} dataSource
  * @property {boolean} isLoading
  * @property {bigint | null} tokenBalance
  * @property {string} tokenSymbol
@@ -49,6 +51,7 @@ export const ethVars = $state({
   tokenContract: null,
   tokenContractAddress: null,
   dappsList: [],
+  dataSource: "contract",
   isLoading: false,
   tokenBalance: null,
   tokenSymbol: "DRNK",
@@ -144,28 +147,39 @@ export async function connectTokenContract() {
   }
 }
 
-// Reload the full dapps list from the DappsManager contract.
-// Shared so any component can trigger a refresh (e.g. after connecting
-// the wallet or after a successful vote) and the reactive view updates.
+// Reload the full dapps list. Prefers The Graph subgraph (public, no wallet
+// needed); falls back to direct contract reads when the subgraph is
+// unreachable or not deployed yet. Shared so any component can trigger a
+// refresh (e.g. after connecting the wallet or after a successful vote).
 export async function refreshDappsList() {
   ethVars.isLoading = true;
-  if (ethVars.contract === null) {
-    ethVars.dappsList = [];
-    ethVars.isLoading = false;
-    return;
-  }
   try {
-    const dappsListNames = await ethVars.contract.getAllDappNames();
-    const dapps = [];
-    for (const name of dappsListNames) {
-      const info = await getDappInfoForName(name);
-      if (info) {
-        dapps.push(info);
+    const { dapps } = await fetchDappsFromSubgraph();
+    ethVars.dappsList = dapps;
+    ethVars.dataSource = "subgraph";
+  } catch (subgraphError) {
+    console.warn(
+      "Subgraph unavailable, falling back to contract reads:",
+      subgraphError,
+    );
+    ethVars.dataSource = "contract";
+    if (ethVars.contract === null) {
+      ethVars.dappsList = [];
+    } else {
+      try {
+        const dappsListNames = await ethVars.contract.getAllDappNames();
+        const dapps = [];
+        for (const name of dappsListNames) {
+          const info = await getDappInfoForName(name);
+          if (info) {
+            dapps.push(info);
+          }
+        }
+        ethVars.dappsList = dapps;
+      } catch (error) {
+        console.error("Failed to refresh dapps list:", error);
       }
     }
-    ethVars.dappsList = dapps;
-  } catch (error) {
-    console.error("Failed to refresh dapps list:", error);
   } finally {
     ethVars.isLoading = false;
   }

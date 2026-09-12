@@ -190,3 +190,42 @@ $ forge script script/DemoTest.s.sol:DemoTestScript  --rpc-url $PROVIDER_URL --p
 2. [DappsManager](./src-sc/DappsManager.sol)
 3. [Demo test](./test/DappsManager.t.sol)
 4. https://ethereum.stackexchange.com/questions/87451/solidity-error-struct-containing-a-nested-mapping-cannot-be-constructed
+
+## The Graph Integration (ETHOnline 2026)
+
+DappRank usa [The Graph](https://thegraph.com) como columna vertebral de datos:
+un subgraph indexa los eventos de `DappsManager.sol` en Sepolia y alimenta tanto
+el ranking del frontend como un agente IA (Subgraph MCP) para análisis en
+lenguaje natural.
+
+### Estado
+
+- [x] Propuesta de eventos documentada en `src-sc/DappsManager.sol` (comentada, pendiente de aprobación)
+- [x] Proyecto subgraph en [`subgraph/`](./subgraph/README.md)
+- [x] Frontend preparado para leer del subgraph con fallback al contrato (`src/lib/subgraph.svelte.js`)
+- [ ] Aprobar e integrar los eventos en `src-sc/DappsManager.sol`
+- [ ] Redeploy del contrato en Sepolia (el despliegue actual no emite eventos)
+- [ ] Desplegar subgraph a Subgraph Studio
+- [ ] Configurar Subgraph MCP para el agente IA
+
+### Contrato
+
+La propuesta (pendiente de aprobación) añade a `DappsManager.sol` los eventos:
+`DappRegistered`, `DappApproved`, `DappBanned`, `VoteCast`, `TokensBurned`,
+`DappCashOut`, `DappRemoved` y `DappCIDUpdated`. `VoteCast` incluye `amount`
+para que el subgraph calcule el delta de balance. También propone que
+`dappCashOut()` descuente `dapp.balance` (corrección de contabilidad
+pre-existente). Todo está comentado en el contrato hasta su aprobación.
+
+### Subgraph
+
+Ver [`subgraph/README.md`](./subgraph/README.md) para el despliegue. El
+frontend consulta el endpoint vía `VITE_SUBGRAPH_URL` (ver `envexample`); si no
+está disponible, cae a lecturas directas del contrato.
+
+### Agente IA
+
+El [Subgraph MCP](https://thegraph.com/docs/en/subgraphs/tooling/subgraph-mcp/introduction/)
+permite consultar el subgraph en lenguaje natural: rankings, tendencias de
+quema, presión deflacionaria, etc. Configurar con el endpoint del subgraph
+desplegado.

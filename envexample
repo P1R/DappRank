@@ -13,6 +13,10 @@ BONUS=1000000000000000000000
 # Deployed contract
 VITE_SMARTCONTRACTADDRS="0xD60DC0805f44d10cAc6594f1a501c67929448957"
 
+# The Graph subgraph endpoint (Subgraph Studio). Set after deploying the subgraph.
+# Format: https://api.studio.thegraph.com/query/<SLUG>/<VERSION>
+#VITE_SUBGRAPH_URL="https://api.studio.thegraph.com/query/dapprank/0.0.1"
+
 #m Anvil Accounts
 ACC0="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 ACC1="0x70997970C51812dc3A010C7d01b50e0d17dc79C8"

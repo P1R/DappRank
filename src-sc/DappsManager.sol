@@ -137,6 +137,19 @@ contract DappsManager is AccessControl {
     error CallerNotDAO(address caller);
     error UnknownStatus(Status unknown);
 
+    // --- Events (The Graph integration) — PROPUESTA PENDIENTE DE APROBACIÓN ---
+    // Descomentar al aprobar la integración. Nota: VoteCast incluye `amount`
+    // (desviación de la estrategia) para que el subgraph calcule el delta de
+    // balance; DappRemoved y DappCIDUpdated evitan datos obsoletos en el índice.
+    // event DappRegistered(bytes32 indexed name, address indexed owner, string cid);
+    // event DappApproved(bytes32 indexed name);
+    // event DappBanned(bytes32 indexed name);
+    // event VoteCast(bytes32 indexed dapp, address indexed voter, uint256 voteRate, uint256 fanWeight, uint256 timestamp, uint256 amount);
+    // event TokensBurned(bytes32 indexed dapp, uint256 amount);
+    // event DappCashOut(bytes32 indexed dapp, address indexed owner, uint256 amount);
+    // event DappRemoved(bytes32 indexed name);
+    // event DappCIDUpdated(bytes32 indexed name, string cid);
+
     // airdrops
     uint256 public bonus;
     // listingFee
@@ -268,6 +281,8 @@ contract DappsManager is AccessControl {
 
         dapps.push(name);
         _mint(msg.sender, 10 * bonus);
+
+        // emit DappRegistered(name, msg.sender, cid); // PROPUESTA The Graph
     }
 
     function approveDapp(bytes32 _name) external {
@@ -277,6 +292,8 @@ contract DappsManager is AccessControl {
                 hasRole(DAO_ROLE, msg.sender)
         );
         dappsIndex[_name].status = Status.Active;
+
+        // emit DappApproved(_name); // PROPUESTA The Graph
     }
 
     function banDapp(bytes32 _name) external {
@@ -286,6 +303,8 @@ contract DappsManager is AccessControl {
                 hasRole(DAO_ROLE, msg.sender)
         );
         dappsIndex[_name].status = Status.Banned;
+
+        // emit DappBanned(_name); // PROPUESTA The Graph
     }
 
     //function expiredDapp(bytes32 name) external {
@@ -299,6 +318,8 @@ contract DappsManager is AccessControl {
         require(DappNameExists(name));
         require(msg.sender == dappsIndex[name].owner);
         dappsIndex[name].cid = cid;
+
+        // emit DappCIDUpdated(name, cid); // PROPUESTA The Graph
     }
 
     function rateDapp(bytes32 name, uint256 amount) external {}
@@ -319,6 +340,8 @@ contract DappsManager is AccessControl {
         dapps[index] = dapps[dapps.length - 1];
         dapps.pop();
         delete dappsIndex[name];
+
+        // emit DappRemoved(name); // PROPUESTA The Graph
     }
 
     function removeFan(uint256 index, address fan) public {
@@ -396,6 +419,8 @@ contract DappsManager is AccessControl {
         dapp.weight_total_sum += vote.fan_weight;
         dapp.rate = dapp.weight_votes_sum / dapp.weight_total_sum;
 
+        // emit VoteCast(_name, msg.sender, _rate, vote.fan_weight, block.timestamp, _amount); // PROPUESTA The Graph
+
         // Distribution
         //drnk.transferFrom(msg.sender, address(this), (_amount * DAOFee)); //charged on cashout
         drnk.transferFrom(msg.sender, address(this), _amount);
@@ -406,6 +431,8 @@ contract DappsManager is AccessControl {
             _amount -
             ((_amount * burnFee) / 10_000) -
             ((_amount * DAOFee) / 10_000);
+
+        // emit TokensBurned(_name, (_amount * burnFee) / 10_000); // PROPUESTA The Graph
     }
 
     function dappCashOut(bytes32 _name, uint256 _amount) external {
@@ -414,9 +441,12 @@ contract DappsManager is AccessControl {
         require(dapp.status == Status.Active, "Dapp is not active");
         require(dapp.owner == msg.sender, "Ups... You are not the dapp owner");
 
+        // dapp.balance -= _amount; // PROPUESTA The Graph: mantener contabilidad en sync
         drnk.approve(msg.sender, _amount - ((_amount * DAOFee) / 10_000));
         drnk.transfer(msg.sender, _amount - ((_amount * DAOFee) / 10_000)); //charged on cashout
         drnk.transfer(DAOAddrss, (_amount * DAOFee) / 10_000); //charged on cashout
+
+        // emit DappCashOut(_name, msg.sender, _amount); // PROPUESTA The Graph
     }
 
     function getAllFans() external view returns (address[] memory) {
