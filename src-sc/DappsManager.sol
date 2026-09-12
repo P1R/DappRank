@@ -24,6 +24,110 @@ import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 // [ ] IisAlive
 // [ ] sacrifice
 
+// ============================================================================
+// PROPUESTA PENDIENTE DE APROBACIÓN — EVENTOS PARA INTEGRACIÓN CON THE GRAPH
+// ============================================================================
+// Estado: PROPUESTA. Este bloque NO cambia el comportamiento del contrato.
+// Si se aprueba: integrar los eventos, añadir tests, redeployar en Sepolia y
+// actualizar las direcciones (envexample, src/lib/ethers.svelte.js, README.md).
+//
+// ----------------------------------------------------------------------------
+// 1) CONTEXTO
+// ----------------------------------------------------------------------------
+// DappsManager NO emite ningún evento hoy. The Graph solo puede indexar datos
+// a través de eventos: sin eventos no hay subgraph posible. La estrategia
+// ETHOnline 2026 (premio The Graph) requiere:
+//   - Un subgraph consumiendo datos LIVE del contrato en Sepolia
+//   - Un agente IA (Subgraph MCP) haciendo razonamiento sobre esos datos
+//     (preguntas en lenguaje natural: rankings, tendencias, deflación...)
+//
+// ----------------------------------------------------------------------------
+// 2) EVENTOS PROPUESTOS
+// ----------------------------------------------------------------------------
+//   event DappRegistered(bytes32 indexed name, address indexed owner, string cid);
+//   event DappApproved(bytes32 indexed name);
+//   event DappBanned(bytes32 indexed name);
+//   event VoteCast(bytes32 indexed dapp, address indexed voter, uint256 voteRate, uint256 fanWeight, uint256 timestamp);
+//   event TokensBurned(bytes32 indexed dapp, uint256 amount);
+//   event DappCashOut(bytes32 indexed dapp, address indexed owner, uint256 amount);
+//
+// ----------------------------------------------------------------------------
+// 3) DÓNDE SE EMITIRÍA CADA UNO Y QUIÉN LO DISPARA
+// ----------------------------------------------------------------------------
+//   DappRegistered -> registerDapp()   — cualquier usuario pagando el listing fee
+//   DappApproved   -> approveDapp()    — solo DEFAULT_ADMIN_ROLE / DAO_ROLE
+//   DappBanned     -> banDapp()        — solo DEFAULT_ADMIN_ROLE / DAO_ROLE
+//   VoteCast       -> voteDapp()       — cualquier fan con DRNK y allowance
+//   TokensBurned   -> voteDapp()       — quema automática (burnFee) al votar
+//   DappCashOut    -> dappCashOut()    — solo el owner del dapp
+//
+// ----------------------------------------------------------------------------
+// 4) PARA QUÉ SIRVE CADA EVENTO EN THE GRAPH / MCP
+// ----------------------------------------------------------------------------
+// DappRegistered / DappApproved / DappBanned
+//   -> Alimentan la entidad Dapp del subgraph (estado: Submitted/Active/Banned).
+//   -> El agente puede responder: "¿qué dapps están activas?", "¿cuántas están
+//      pendientes de aprobación?", "¿qué dapps han sido baneadas?".
+//
+// VoteCast
+//   -> Alimenta la entidad Vote (historial por votante) y actualiza el rating
+//      ponderado del dapp en el subgraph.
+//   -> El agente puede responder: "¿cómo evolucionó el rating de dapp X?",
+//      "¿quién votó y con qué peso?", "¿qué dapp tiene más consenso?".
+//
+// TokensBurned  <-- el que más dudas genera, explicado en detalle:
+//   -> El burn ocurre automáticamente dentro de voteDapp() (L298-300): al votar
+//      se quema burnFee (10%) del monto. Hoy es invisible: el contrato solo
+//      guarda el acumulado dapp.burned, sin historia.
+//   -> El evento convierte ese efecto secundario en un log consultable
+//      (dapp, amount, bloque, timestamp). El subgraph lo indexa en:
+//        - Dapp.burned            (acumulado por dapp)
+//        - GlobalStat.totalBurned (métrica central del modelo "ultrasound money")
+//        - (opcional) entidad Burn por evento para series temporales
+//   -> Con historia indexada, el agente puede responder:
+//        - "¿Qué dapp ha quemado más DRNK esta semana?"
+//        - "¿Cómo ha evolucionado la quema de dapp X?"
+//        - "¿Cuál es la presión deflacionaria total de DRNK?"
+//        - "¿Qué dapps están creciendo en actividad?" (join VoteCast + Burn)
+//   -> ¿Por qué un evento explícito si el monto es derivable de VoteCast
+//      (amount * burnFee / 10_000)?
+//        - El mapping del subgraph no replica la matemática de fees (menos bugs)
+//        - Si burnFee cambia en el futuro, el histórico sigue siendo exacto
+//        - Autodocumentado: el log dice explícitamente qué y para quién se quemó
+//
+// DappCashOut
+//   -> Registra retiros del owner. El agente puede responder: "¿qué dapps han
+//      retirado fondos?", "¿cuánto ha retirado cada una?".
+//
+// ----------------------------------------------------------------------------
+// 5) DECISIONES / DESVIACIONES RESPECTO A LA ESTRATEGIA (requieren tu OK)
+// ----------------------------------------------------------------------------
+// a) TokensBurned se emite en voteDapp(), NO en burn():
+//    burn(uint256) (L139) es un burn genérico del usuario sin contexto de dapp.
+//    El burn con contexto ocurre dentro de voteDapp(). Emitir ahí.
+//
+// b) dappCashOut() NO descuenta dapp.balance (inconsistencia pre-existente):
+//    transfiere tokens pero el balance on-chain queda intacto; el subgraph
+//    heredaría un balance inflado. Recomendado corregir en la misma pasada
+//    (dapp.balance -= _amount). Requiere aprobación porque cambia estado.
+//
+// c) Eventos adicionales recomendados (NO están en la estrategia):
+//    - DappRemoved(bytes32 indexed name)              -> removeDapp()     (L203)
+//    - DappCIDUpdated(bytes32 indexed name, string cid) -> updateDappCID() (L194)
+//    Sin ellos el subgraph mostraría dapps eliminadas y CIDs obsoletos.
+//
+// ----------------------------------------------------------------------------
+// 6) TRABAJO POSTERIOR A LA APROBACIÓN
+// ----------------------------------------------------------------------------
+//   1. Integrar eventos + emit en las funciones indicadas
+//   2. Añadir tests con vm.expectEmit en test/DappsManager.t.sol
+//   3. forge build && forge test
+//   4. Redeploy en Sepolia -> NUEVA dirección de contrato
+//   5. Actualizar direcciones: envexample, src/lib/ethers.svelte.js, README.md
+//   6. Crear subgraph (subgraph.yaml, schema.graphql, src/mapping.ts, abis/)
+//   7. Deploy a Subgraph Studio + configurar Subgraph MCP para el agente IA
+// ============================================================================
+
 contract DappsManager is AccessControl {
     bytes32 public constant DAO_ROLE = keccak256("DAO_ROLE");
 
