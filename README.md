@@ -6,7 +6,7 @@ Status Deployet at Sepolia:
 
 [ipns](https://gateway-mx.decentralizedscience.org/ipns/dapprank.decentralizedscience.org/)
 
-Web3/ipfs: bafybeihx27kivfu7tgvj7llxnid26yqn7j5w3jhugpoeb6odys636lcm5q
+IPFS CID: bafybeidzfwsyugg4yxp46t6ag7ikjz43kh6oqgkxh2h5p2qynzjey4tipu
 
 Dapps contract address is: [0x428960cB8C32f3Ac6303517FA4A8D0A73E62Effd](https://sepolia.etherscan.io/address/0x428960cB8C32f3Ac6303517FA4A8D0A73E62Effd)
 
