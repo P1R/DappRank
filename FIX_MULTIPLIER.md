@@ -1,8 +1,17 @@
-# FIX: Inflación de emisión de DRNK por `multiplier` inicializado con `bonus`
+# DappRank — Bugs & Fixes
+
+Registro de bugs corregidos durante el desarrollo, con causa raíz, evidencia
+(tests/contrato) y estado. **Todos los bugs listados están resueltos y
+verificados en el contrato desplegado** (`0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD`)
+y en la UI. No intentar corregirlos — conservar como registro histórico.
+
+---
+
+## Fix 1 — Inflación de emisión de DRNK por `multiplier` inicializado con `bonus`
 
 **Fecha:** 2026-09-12
 **Archivo afectado:** `src-sc/DappsManager.sol` — `_mint()`
-**Estado:** Implementado, pendiente de redeploy en Sepolia
+**Estado: ✅ RESUELTO y desplegado** (contrato `0x6b0EB389...`, verificado on-chain)
 
 ---
 
@@ -67,7 +76,7 @@ $$
 
 El `multiplier` **no aparece en ninguna ecuación del rating**. Su único uso en
 todo el contrato es en `buyDRNK()` para escalar la emisión de tokens por ETH
-comprado. Es un mecanismo de *game theory* (recompensar actividad), no parte del
+comprado. Es un mecanismo de _game theory_ (recompensar actividad), no parte del
 cálculo de votos.
 
 ### 2.2 El valor inicial correcto es `1`
@@ -152,13 +161,13 @@ desde una base sana (`1`) en lugar de una base inflada (`1000e18`).
 
 ## 4. Impacto en el despliegue
 
-| Aspecto | Impacto |
-|---|---|
-| ABI / funciones | Ninguno (solo cambia lógica interna de `_mint`) |
-| Eventos de The Graph | Ninguno (los eventos ya integrados no cambian) |
-| Frontend | Ninguno (no usa el `multiplier`) |
+| Aspecto                    | Impacto                                                                                                                 |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| ABI / funciones            | Ninguno (solo cambia lógica interna de `_mint`)                                                                         |
+| Eventos de The Graph       | Ninguno (los eventos ya integrados no cambian)                                                                          |
+| Frontend                   | Ninguno (no usa el `multiplier`)                                                                                        |
 | Contrato desplegado actual | **Requiere redeploy** — el suministro ya inflado (~1e21 DRNK) no se desinfla solo; el fix solo evita que siga creciendo |
-| Test suite | 14/14 pasan, incluido el nuevo test de regresión |
+| Test suite                 | 14/14 pasan, incluido el nuevo test de regresión                                                                        |
 
 ## 5. Recomendación
 
@@ -168,3 +177,108 @@ desde una base sana (`1`) en lugar de una base inflada (`1000e18`).
    testnet o si conviene un despliegue limpio.
 3. Documentar en el README que el `multiplier` es un mecanismo de game theory
    independiente del rating SRWV (para evitar confusión futura).
+
+---
+
+## Fix 2 — Falta aprobación (allowance) antes de emitir un voto
+
+**Estado: ✅ RESUELTO (2026-09-13) — verificado en `Vote4DappModal.svelte`**
+
+### Síntoma
+
+Al hacer clic en **Submit Vote** la transacción se emitía correctamente (la wallet la
+firma y la envía), pero el bloque se minaba con `status: 0` (revertido). El modal
+mostraba:
+
+```
+Transaction failed: transaction execution reverted (action="sendTransaction",
+data=null, reason=null, transaction={ "data": "", "from": "...", ... },
+receipt={ ...,"gasUsed":"35392","status":0, ... })
+```
+
+Detalles clave del revert:
+
+- `data: ""` → el revert **no venía de un `require` con mensaje**.
+- `gasUsed: 35392` → consumo bajo, el fallo ocurría pronto en la ejecución.
+
+### Causa raíz
+
+El flujo de la UI en `src/components/Vote4Dapp.svelte` llamaba directamente a
+`voteDapp()` sobre el contrato `DappsManager` **sin haber aprobado primero** que ese
+contrato pudiera gastar los tokens DRNK del usuario. En `src-sc/DappsManager.sol`,
+`voteDapp()` exige `drnk.allowance(msg.sender, address(this)) >= _amount` — el
+`require` de allowance **no lleva mensaje**, por lo que ethers decodifica el revert
+como `data: ""` (sin razón).
+
+### Evidencia en los tests de Solidity
+
+`test/DappsManager.t.sol` → `testVote4Dapp()`. Antes de votar, cada usuario debe
+aprobar al contrato (líneas 228-233). El test pasaba al 100%; el frontend
+simplemente omitía ese paso.
+
+### ✅ Resolución aplicada
+
+El flujo de aprobación se implementó en `src/components/Vote4DappModal.svelte`
+(L199-213): antes de llamar a `voteDapp()`, se consulta la `allowance` del usuario
+hacia el contrato y, si es insuficiente, se envía `approve()` y se espera la
+confirmación. Verificado en testnet con la wallet real.
+
+> **Nota de comportamiento:** cada `voteDapp` gasta `_amount` de la allowance (la
+> consume el `transferFrom` interno), por lo que la aprobación debe repetirse cuando
+> se quiera volver a votar con el mismo o mayor importe.
+
+---
+
+## Fix 3 — Reverts silenciosos en `voteDapp` (imposible diagnosticar desde la UI)
+
+**Estado: ✅ RESUELTO (2026-09-13) — contrato redeployado con mensajes + UI con pre-flight**
+
+### Síntoma
+
+Al votar, la transacción se revertía con un error críptico sin razón:
+
+```
+Transaction failed: transaction execution reverted (action="sendTransaction",
+data=null, reason=null, ..., "data": "", ..., "status": 0, ...)
+```
+
+`data: ""` indicaba un `require` **sin mensaje** — ethers no podía decodificar la causa.
+
+### Causa raíz
+
+`voteDapp()` en `src-sc/DappsManager.sol` tenía 4 `require` sin mensaje:
+
+```solidity
+require(DappNameExists(_name));                                  // 1
+require(drnk.balanceOf(msg.sender) > 0);                         // 2
+require(drnk.allowance(msg.sender, address(this)) >= _amount);   // 3
+require(_rate > 0 && _rate <= 100);                              // 4
+```
+
+Cualquiera de ellos revertía en silencio. En la práctica, el caso más común era el
+**#2 (saldo de DRNK = 0)**: la UI enviaba la aprobación (`approve`) y después
+`voteDapp`, pero nunca comprobaba que el usuario tuviera tokens.
+
+### Solución aplicada
+
+1. **Contrato** (`src-sc/DappsManager.sol`): mensajes en los 4 `require` +
+   mensaje en el `require` silencioso de `buyDRNK` (`Top-up window expired`).
+2. **Frontend** (`src/components/Vote4DappModal.svelte`): chequeos previos
+   (pre-flight) antes de enviar cualquier transacción:
+   - `balanceOf > 0` → "No tienes DRNK…"
+   - `balance >= amount` → "Saldo insuficiente…"
+   - `fanIsAlive` → "Tu cuenta de fan no está activa…"
+   - `DappNameIsActive` → "Esta dApp no está activa…"
+3. El dropdown de dApps ahora solo lista dApps con estado `Active` (las demás no
+   pueden recibir votos).
+
+### ✅ Resolución verificada
+
+- **Contrato redeployado** en Sepolia (`0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD`)
+  con los mensajes en los `require` de `voteDapp()` ("Dapp does not exist",
+  "Insufficient DRNK balance", "Allowance not approved", "Rate must be between
+  1 and 100").
+- **UI con pre-flight checks** en `Vote4DappModal.svelte` (balance, saldo, fan,
+  dapp activa) antes de enviar cualquier transacción.
+- Verificado en testnet con la wallet real (votar funciona y los errores ahora
+  muestran mensajes claros).

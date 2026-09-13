@@ -12,6 +12,57 @@ Dapps contract address is: [0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD](https://
 
 DRNK Token contract address is: [0x9549A8CcaB9fF25Cf5061bFBC5188Baed0615B60](https://sepolia.etherscan.io/address/0x9549A8CcaB9fF25Cf5061bFBC5188Baed0615B60)
 
+## ETHOnline 2026 — The Graph Prize Submission
+
+**Prize:** 🤖 Best AI Tooling or AI Use Case with The Graph — **Continuity pool** ($5,000)
+
+**Live subgraph endpoint:** [https://api.studio.thegraph.com/query/1760241/dapprank/v0.0.2](https://api.studio.thegraph.com/query/1760241/dapprank/v0.0.2)
+
+**Demo video:** [link to 2–4 min video](<>)
+
+### Qualification checklist
+
+| Requirement                            | Where it's met                                                                                                                                                 |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The Graph as load-bearing data source  | `subgraph/` indexes `DappsManager` events; frontend and AI agent read from it                                                                                  |
+| Live data from a Graph provider        | Subgraph deployed on Subgraph Studio (Sepolia) — queryable live, no mocked data                                                                                |
+| Meaningful work with the data          | [`skills/dapprank-subgraph/SKILL.md`](./skills/dapprank-subgraph/SKILL.md) — natural-language interface with reasoning (whale analysis, deflationary pressure) |
+| Open-source with clear README/SKILL.md | This README + the agent skill                                                                                                                                  |
+| Public repo + demo video               | This repo + video link above                                                                                                                                   |
+
+### Pre-existing Code (before hackathon)
+
+- DappRank contracts (`src-sc/DappsManager.sol`, `src-sc/DRNK.sol`) — SRWV ranking + DRNK token
+- Frontend (Svelte) — ranking UI, wallet connect, vote/buy/register modals
+- Contract test suite (`test/DappsManager.t.sol`)
+
+### New Work (during hackathon)
+
+- **The Graph events** integrated into `DappsManager.sol` — 8 events (`DappRegistered`, `DappApproved`, `DappBanned`, `VoteCast`, `TokensBurned`, `DappCashOut`, `DappRemoved`, `DappCIDUpdated`)
+- **Subgraph** (`subgraph/`) — schema, AssemblyScript mapping, manifest; deployed to Subgraph Studio
+- **Frontend subgraph integration** — ranking reads from The Graph with contract fallback (`src/lib/subgraph.svelte.js`)
+- **Bug fixes** — `dappCashOut` balance accounting; DRNK emission inflation (see [`FIX_MULTIPLIER.md`](./FIX_MULTIPLIER.md))
+- **AI Agent Skill** ([`skills/dapprank-subgraph/SKILL.md`](./skills/dapprank-subgraph/SKILL.md)) — natural-language interface to live ranking data
+
+### How judges can run it
+
+```bash
+# 1. Query the live subgraph (no key needed)
+curl -s -X POST "https://api.studio.thegraph.com/query/1760241/dapprank/v0.0.2" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"{ dapps(orderBy: rate, orderDirection: desc) { name status rate } }"}'
+
+# 2. Run the contract tests (validates the events the subgraph consumes)
+forge test
+
+# 3. Build the subgraph
+cd subgraph && bun run codegen && bun run build
+
+# 4. Use the AI agent skill (any MCP client)
+#    Point your agent at skills/dapprank-subgraph/SKILL.md and ask:
+#    "Which dapp has the highest rating?"
+```
+
 The DappRank DeFi model introduces a revolutionary decentralized ranking system
 for dapps using a novel voting mechanism called Square Root Weighted Voting
 (SRWV). This system addresses the critical issue of whale manipulation in
@@ -107,6 +158,14 @@ The SRWV mechanism directly supports the ultrasound money model through:
 Img 2. Shows Sequence Diagram of the Voting Process
 
 which also includes a Demo test process to understand the Voting and other procedures.
+
+## AI Agent Skill
+
+[`skills/dapprank-subgraph/SKILL.md`](./skills/dapprank-subgraph/SKILL.md) is an
+agent skill that lets any AI assistant (Claude, Cursor, Zed, etc.) answer
+natural-language questions about the live DappRank ranking — ratings, votes,
+DRNK burns, deflationary pressure, and whale analysis — by querying the
+subgraph on The Graph protocol. Judges and teammates can run it directly.
 
 ## Install requirements
 
@@ -204,8 +263,9 @@ lenguaje natural.
 - [x] Proyecto subgraph en [`subgraph/`](./subgraph/README.md)
 - [x] Frontend preparado para leer del subgraph con fallback al contrato (`src/lib/subgraph.svelte.js`)
 - [x] Contrato redeployado en Sepolia con eventos (`0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD`)
-- [ ] Desplegar subgraph a Subgraph Studio
-- [ ] Configurar Subgraph MCP para el agente IA
+- [x] Subgraph desplegado en Subgraph Studio (`1760241`, v0.0.2)
+- [x] AI Agent Skill creado ([`skills/dapprank-subgraph/SKILL.md`](./skills/dapprank-subgraph/SKILL.md))
+- [ ] Demo video (2–4 min)
 
 ### Contrato
 

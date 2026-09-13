@@ -5,7 +5,7 @@ import { encodeBytes32String } from "ethers";
 // Format: https://api.studio.thegraph.com/query/<SLUG>/<VERSION>
 const SUBGRAPH_URL =
   import.meta.env.VITE_SUBGRAPH_URL ||
-  "https://api.studio.thegraph.com/query/0/dapprank/0.0.1";
+  "https://api.studio.thegraph.com/query/1760241/dapprank/v0.0.2";
 
 /**
  * Generic GraphQL query against the DappRank subgraph.
