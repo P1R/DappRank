@@ -8,6 +8,7 @@
         refreshTokenBalance,
     } from "../lib/ethers.svelte.js";
     import { closeModal } from "../lib/modal.svelte.js";
+    import { registerEnsSubname } from "../lib/ens.svelte.js";
     import { t } from "../lib/i18n.svelte.js";
     import { encodeBytes32String, parseEther, formatEther } from "ethers";
 
@@ -135,6 +136,24 @@
             );
             const receipt = await tx.wait();
             console.log(receipt);
+
+            // ENSv2: crea <label>.dapprank.eth automáticamente (best-effort).
+            // Si falla (label con '.', subname ya existe, etc.) el registro de
+            // la dApp en el contrato NO se ve afectado.
+            if (ethVars.signer && ethVars.signerAddress) {
+                const ens = await registerEnsSubname(
+                    dappName.trim(),
+                    ethVars.signerAddress,
+                    cid.trim(),
+                    ethVars.signer,
+                );
+                if (!ens.ok) {
+                    console.warn(
+                        "ENSv2 subname no creado (la dApp sí quedó registrada):",
+                        ens.reason,
+                    );
+                }
+            }
 
             await refreshDappsList();
             await refreshTokenBalance();

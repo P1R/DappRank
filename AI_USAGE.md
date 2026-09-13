@@ -273,6 +273,51 @@ el storage `bytes32` del contrato.
 
 ---
 
+## Registro automático de subnames ENSv2 (2026-09-13)
+
+### Contexto
+
+**El equipo** pidió que el registro de una dApp cree su subname ENSv2
+automáticamente desde la app, sin consola ni intervención humana, y sin
+modificar el contrato estable `DappsManager.sol`.
+
+### Decisiones del equipo (dirigieron esta fase)
+
+- Automatizar el registro ENSv2 vía un contrato helper (no tocar el contrato estable).
+- Redeployar el subregistry (v1) para incluir los roles admin (`<< 128`) — el
+  v0 no podía delegar `ROLE_REGISTRAR` (EAC requiere el rol admin para otorgar).
+- Ejecutar los deploys con su clave privada.
+
+### Implementación de la IA (bajo esa dirección)
+
+- **`src-sc/DappRankEnsRegistrar.sol`** (nuevo): helper que en una sola
+  transacción despliega el `PermissionedResolver` del subname (records
+  `dapprank.cid` + `addr` precargados) y lo registra en el subregistry.
+  Cualquiera puede llamarlo; el contrato tiene `ROLE_REGISTRAR`.
+- **`script/DeployEnsRegistrar.s.sol`** (nuevo): despliega el helper y otorga
+  `ROLE_REGISTRAR` vía `grantRootRoles` (descubierto: `grantRoles` rechaza
+  `ROOT_RESOURCE`).
+- **`script/EnsSetup.s.sol`**: `RegistryRoles.ALL` ahora incluye los roles
+  admin; salt del subregistry y resolvers versionado (v1) para redeploy.
+- **`src/lib/ens.svelte.js`**: `registerEnsSubname()` — llama al helper con la
+  wallet del usuario.
+- **`src/components/RegisterDappModal.svelte`**: tras `registerDapp()` exitoso,
+  llama a `registerEnsSubname()` (best-effort: si falla, la dApp igual queda
+  registrada).
+
+### Despliegues (2026-09-13, ejecutados con la clave del equipo)
+
+- Subregistry v1: `0x1677CAc3620C9E55D60228b4000D2820CC246179`
+- Helper: `0xb43c137FbeCf425Ef4E294C9b3dAfE5319c3c389`
+- Verificado: `registerSubname` simulado devuelve el resolver sin revertir.
+
+### Validación
+
+- `forge test` 14/14 ✓ · `forge build` ✓ · `bun run build` ✓
+- `findOwner('desci.dapprank.eth')` → wallet del equipo ✓
+
+---
+
 ## Mejora de interfaz: contexto, i18n ES/EN y paleta sobria (2026-09-13)
 
 ### Contexto

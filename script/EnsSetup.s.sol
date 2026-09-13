@@ -103,6 +103,8 @@ library RegistryRoles {
     uint256 internal constant UPGRADE = 1 << 124;
 
     /// Todos los roles de root para la cuenta administradora del subregistry.
+    /// Incluye los roles admin (<< 128) para poder delegar roles después
+    /// (ej. ROLE_REGISTRAR al helper de registro automático).
     uint256 internal constant ALL =
         REGISTRAR |
             REGISTER_RESERVED |
@@ -113,7 +115,17 @@ library RegistryRoles {
             SET_RESOLVER |
             SET_URI |
             CAN_NAME |
-            UPGRADE;
+            UPGRADE |
+            ((REGISTRAR |
+                REGISTER_RESERVED |
+                SET_PARENT |
+                UNREGISTER |
+                RENEW |
+                SET_SUBREGISTRY |
+                SET_RESOLVER |
+                SET_URI |
+                CAN_NAME |
+                UPGRADE) << 128);
 }
 
 library ResolverRoles {
@@ -151,15 +163,17 @@ contract EnsSetupScript is Script {
     address internal s_subregistry;
     bytes32 internal s_domainNode;
 
-    // ENSv2 Sepolia (canonical)
+    // ENSv2 Sepolia (canonical — deployment 2026-07-30, verificado on-chain)
+    // Fuente: https://docs.ens.domains/learn/deployments/ (el doc del repo
+    // contracts-v2/docs/addresses/sepolia.md quedó desactualizado 2026-06-29).
     address internal constant ETH_REGISTRY =
-        0x67b728a792e789a8978b30cF1b3b641f19354b43;
+        0xBDC85dD5b15D7ecb354cd7cb6f2c50b4f2c4F0E2;
     address internal constant USER_REGISTRY_IMPL =
-        0x840Fa461059862Ea466A711E8C98c8dE732061C0;
+        0x624a25d67B59D587752EbEc8DdeD8827dAe52050;
     address internal constant PERMISSIONED_RESOLVER_IMPL =
-        0x7E4B2d59938930168024201752EE5503df402303;
+        0x9EAe5C2730a7dD16BDD1DeE6421a1B91e3B0365e;
     address internal constant VERIFIABLE_FACTORY =
-        0x118Bc31A50d559F7015a8Da26d54B3b030CdB70F;
+        0x10dC6333CDFe1FCEf624c6e0a8221b91804Cd7ef;
 
     // Dominio raíz (configurable por env: ENS_DOMAIN="dapprank" por defecto).
     // Si dapprank.eth ya está registrado en Sepolia por otra cuenta, usa otro
@@ -175,7 +189,8 @@ contract EnsSetupScript is Script {
     function run() external {
         uint256 deployerKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerKey);
-        s_domain = vm.envOr("ENS_DOMAIN", string("dapprank"));
+        // Acepta "dapprank" o "dapprank.eth" (se normaliza a la etiqueta).
+        s_domain = _stripTld(vm.envOr("ENS_DOMAIN", string("dapprank")));
         vm.startBroadcast(deployerKey);
 
         // --- 0. Verificar que <domain>.eth está registrado ------------------
@@ -194,10 +209,12 @@ contract EnsSetupScript is Script {
 
         // --- 1. Desplegar el subregistry (UserRegistry) ---------------------
         // Salt determinista (mismo que usa ens-cli): keccak256(abi.encode(
-        // keccak256("UserRegistry"), namehash(domain), 0))
+        // keccak256("UserRegistry"), namehash(domain), version)).
+        // version=1: el subregistry v0 (2026-09-13) no incluyó los roles admin
+        // (<< 128) y no puede delegar ROLE_REGISTRAR al helper automático.
         uint256 registrySalt = uint256(
             keccak256(
-                abi.encode(keccak256("UserRegistry"), domainNode, uint256(0))
+                abi.encode(keccak256("UserRegistry"), domainNode, uint256(1))
             )
         );
         bytes memory registryInit = abi.encodeCall(
@@ -261,7 +278,7 @@ contract EnsSetupScript is Script {
                 abi.encode(
                     keccak256("PermissionedResolver"),
                     subNode,
-                    uint256(0)
+                    uint256(1)
                 )
             )
         );
@@ -295,6 +312,24 @@ contract EnsSetupScript is Script {
     }
 
     // --- Helpers ------------------------------------------------------------
+
+    /// Quita el sufijo ".eth" si viene incluido en ENS_DOMAIN.
+    function _stripTld(
+        string memory name
+    ) internal pure returns (string memory) {
+        bytes memory b = bytes(name);
+        uint256 len = b.length;
+        if (
+            len > 4 &&
+            b[len - 4] == 0x2e &&
+            b[len - 3] == 0x65 &&
+            b[len - 2] == 0x74 &&
+            b[len - 1] == 0x68
+        ) {
+            return substring(name, 0, len - 4);
+        }
+        return name;
+    }
 
     function labelhash(string memory label) internal pure returns (bytes32) {
         return keccak256(bytes(label));

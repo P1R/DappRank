@@ -301,8 +301,9 @@ humanos resolubles on-chain.
 - [x] Capa de resolución ENSv2 en el frontend (`src/lib/ens.svelte.js`) — `namehash`, `dnsEncode`, `resolveTextRecord`, `resolveAddr`, `attachEnsNames`
 - [x] Ranking muestra nombres ENS con badge "ENSv2" y fallback a `bytes32` (`src/components/DappRankList.svelte`)
 - [x] Script de setup on-chain (`script/EnsSetup.s.sol`) — subregistry + subnames + records
-- [ ] `dapprank.eth` registrado en ENSv2 (Sepolia) — acción del equipo vía [ENS Explorer](https://explorer.ens.domains) (pago en USDC)
-- [ ] Subnames `<dappname>.dapprank.eth` registrados (ejecutar el script o `ens-cli`)
+- [x] `dapprank.eth` registrado en ENSv2 (Sepolia) — owner `0x934a406B7CAB0D8cB3aD201f0cdcA6a7855F43b0` (2026-09-13)
+- [x] Subnames `<dappname>.dapprank.eth` registrados (desci, search, nethunters, deca) — subregistry `0x1677CAc3620C9E55D60228b4000D2820CC246179`
+- [x] **Registro automático**: al registrar una dApp en la app, se crea su subname ENSv2 automáticamente vía `DappRankEnsRegistrar` (`0xb43c137FbeCf425Ef4E294C9b3dAfE5319c3c389`) — una sola transacción, sin intervención humana
 
 ### Cómo funciona
 
@@ -316,6 +317,13 @@ humanos resolubles on-chain.
    nombre (`setSubregistry` + `setParent`), y registra un subname por dApp con
    su `PermissionedResolver` (records `dapprank.cid` y `addr` precargados en
    `initialize()`).
+3. **Registro automático**: cuando un usuario registra una dApp en la app
+   (`RegisterDappModal.svelte`), después de `registerDapp()` el frontend llama
+   a [`DappRankEnsRegistrar`](./src-sc/DappRankEnsRegistrar.sol)
+   (`0xb43c137FbeCf425Ef4E294C9b3dAfE5319c3c389`) — una sola transacción que
+   despliega el resolver del subname y lo registra en el subregistry. Sin
+   consola ni intervención humana. Si falla (label con `.`, subname ya
+   existente), la dApp igual queda registrada en el contrato (best-effort).
 
 ### Pasos para el equipo (requieren wallet + USDC en Sepolia)
 
@@ -326,7 +334,7 @@ humanos resolubles on-chain.
 - [ENS Explorer v2 (registrar dominio, red Sepolia)](https://explorer.ens.dev) — ⚠️ no usar `app.ens.domains` (ese es mainnet/ENSv1)
 - [ENS App v2 (alternativa, red Sepolia)](https://app.ens.dev)
 - [Faucet ETH de Alchemy (Sepolia)](https://sepoliafaucet.com) · [Infura](https://www.infura.io/faucet/sepolia) · [Chainlink](https://faucets.chain.link/sepolia)
-- [Faucet USDC de Circle (Sepolia)](https://faucet.circle.com) — o mint directo del MockUSDC (`0xd3322b29a7bdee707d1684676f149bf41aa3422f`, función `mint`, 6 decimales)
+- [Faucet USDC de Circle (Sepolia)](https://faucet.circle.com) — o mint directo del MockUSDC (`0x768f42455a2d082e23ceef7d51e5787c82d67a39`, función `mint`, 6 decimales)
 - [Docs ENSv2](https://docs.ens.domains/ensv2/overview)
 - [Página del premio ENS (ETHOnline 2026)](https://ethglobal.com/events/ethonline2026/prizes/ens)
 
@@ -370,12 +378,15 @@ curl -s -X POST "https://ethereum-sepolia-rpc.publicnode.com" \
 # O simplemente abrir la app: el ranking muestra desci.dapprank.eth con badge ENSv2
 ```
 
-### Direcciones ENSv2 Sepolia (canonical, 2026-06-29)
+### Direcciones ENSv2 Sepolia (canonical, deployment 2026-07-30 — verificado on-chain)
+
+> Fuente: https://docs.ens.domains/learn/deployments/ (el doc del repo
+> `contracts-v2/docs/addresses/sepolia.md` quedó desactualizado en 2026-06-29).
 
 | Contrato                         | Dirección                                    |
 | -------------------------------- | -------------------------------------------- |
 | UpgradableUniversalResolverProxy | `0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe` |
-| ETHRegistry                      | `0x67b728a792e789a8978b30cF1b3b641f19354b43` |
-| UserRegistryImpl                 | `0x840Fa461059862Ea466A711E8C98c8dE732061C0` |
-| PermissionedResolverImpl         | `0x7E4B2d59938930168024201752EE5503df402303` |
-| VerifiableFactory                | `0x118Bc31A50d559F7015a8Da26d54B3b030CdB70F` |
+| ETHRegistry                      | `0xBDC85dD5b15D7ecb354cd7cb6f2c50b4f2c4F0E2` |
+| UserRegistryImpl                 | `0x624a25d67B59D587752EbEc8DdeD8827dAe52050` |
+| PermissionedResolverImpl         | `0x9EAe5C2730a7dD16BDD1DeE6421a1B91e3B0365e` |
+| VerifiableFactory                | `0x10dC6333CDFe1FCEf624c6e0a8221b91804Cd7ef` |

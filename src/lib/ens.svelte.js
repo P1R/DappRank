@@ -7,8 +7,8 @@ import { ethers } from "ethers";
 // Project (Continuity)". DappRank identifica cada dApp con un bytes32 opaco;
 // ENSv2 les da un nombre legible: <dappname>.dapprank.eth.
 //
-// Direcciones canónicas del deployment ENSv2 en Sepolia (2026-06-29):
-//   https://github.com/ensdomains/contracts-v2/blob/main/contracts/docs/addresses/sepolia.md
+// Direcciones canónicas del deployment ENSv2 en Sepolia (2026-07-30):
+//   https://docs.ens.domains/learn/deployments/
 //
 // El entry point de resolución es UpgradableUniversalResolverProxy, que
 // resuelve nombres v1 y v2 (lo usan las apps oficiales de ENS).
@@ -36,6 +36,41 @@ const RESOLVER_ABI = [
 
 /** Clave de texto donde guardamos el CID IPFS de la dApp en su subname. */
 export const ENS_CID_KEY = "dapprank.cid";
+
+/** ABI mínimo del helper DappRankEnsRegistrar. */
+const ENS_REGISTRAR_ABI = [
+  "function registerSubname(string label, address owner, string cid) returns (address resolver)",
+];
+
+/**
+ * Crea automáticamente el subname ENSv2 <label>.dapprank.eth para una dApp
+ * recién registrada, llamando al helper DappRankEnsRegistrar (una sola
+ * transacción: despliega el resolver + registra el subname).
+ *
+ * Best-effort: si falla (label con '.', subname ya existe, helper no
+ * desplegado), el registro de la dApp en el contrato NO se ve afectado.
+ *
+ * @param {string} label nombre de la dApp (sin .eth)
+ * @param {string} owner dirección del owner de la dApp
+ * @param {string} cid CID IPFS de la dApp
+ * @param {import("ethers").JsonRpcSigner} signer wallet del usuario
+ * @returns {Promise<{ ok: boolean; reason?: string; resolver?: string }>}
+ */
+export async function registerEnsSubname(label, owner, cid, signer) {
+  const address = import.meta.env.VITE_ENS_REGISTRAR_ADDRESS;
+  if (!address) {
+    return { ok: false, reason: "VITE_ENS_REGISTRAR_ADDRESS no configurado" };
+  }
+  try {
+    const registrar = new ethers.Contract(address, ENS_REGISTRAR_ABI, signer);
+    const tx = await registrar.registerSubname(label, owner, cid);
+    const receipt = await tx.wait();
+    return { ok: true, resolver: receipt?.logs?.[0]?.address ?? null };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, reason: msg };
+  }
+}
 
 /**
  * ENS namehash (EIP-137) — el mismo algoritmo que usa ENSv2 para los nodes.
