@@ -9,7 +9,9 @@ out/
 /broadcast/**/dry-run/
 
 ## Docs
-docs/
+docs/*
+!docs/UNISWAP_ULTRASOUND_HOOK_PLAN.md
+!docs/UNISWAP_ULTRASOUND_TOKENOMICS.md
 
 ## Dotenv file
 .env

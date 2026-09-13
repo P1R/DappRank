@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.36;
+pragma solidity ^0.8.26;
 
 library Conversor {
     function stringToBytes32(string memory source) public pure returns (bytes32 out) {

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.36;
+pragma solidity ^0.8.26;
 
 import {DappRank} from "./DRNK.sol";
 import {AccessControl} from "openzeppelin-contracts/contracts/access/AccessControl.sol";
