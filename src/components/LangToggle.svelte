@@ -1,16 +1,13 @@
 <script>
-    import { themes, currentTheme, setTheme } from "../lib/theme.svelte.js";
-    import { t } from "../lib/i18n.svelte.js";
+    import { i18n, setLocale, t } from "../lib/i18n.svelte.js";
     import { MorphIcon } from "morphicons/svelte";
-    import { Sparkles, Sun, Moon } from "lucide";
+    import { Globe } from "lucide";
 
-    const ICONS = {
-        original: Sparkles,
-        light: Sun,
-        dark: Moon,
-    };
-    /** @type {Record<string, any>} */
-    const ICON_MAP = ICONS;
+    /** @type {{ id: "en" | "es"; label: string }[]} */
+    const LOCALES = [
+        { id: "en", label: "English" },
+        { id: "es", label: "Español" },
+    ];
 
     let open = $state(false);
 
@@ -18,8 +15,8 @@
         open = !open;
     }
 
-    function choose(/** @type {string} */ id) {
-        setTheme(id);
+    function choose(/** @type {"en" | "es"} */ id) {
+        setLocale(id);
         open = false;
     }
 
@@ -29,7 +26,7 @@
         if (
             open &&
             (!(target instanceof Element) ||
-                !target.closest("[data-theme-toggle]"))
+                !target.closest("[data-lang-toggle]"))
         ) {
             open = false;
         }
@@ -43,17 +40,17 @@
     });
 </script>
 
-<div class="relative" data-theme-toggle>
+<div class="relative" data-lang-toggle>
     <button
         class="btn-icon"
         onclick={toggle}
         aria-expanded={open}
         aria-haspopup="true"
-        aria-label={t("header.changeTheme")}
-        title={t("header.changeTheme")}
+        aria-label={t("header.changeLanguage")}
+        title={t("header.changeLanguage")}
     >
         <MorphIcon
-            icon={ICON_MAP[currentTheme.id]}
+            icon={Globe}
             spring="snappy"
             reducedMotion="user"
             aria-hidden="true"
@@ -64,27 +61,20 @@
         <div
             class="absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-lg border border-neon-cyan/40 bg-void/95 p-1 shadow-xl backdrop-blur-md"
             role="menu"
-            aria-label={t("header.theme")}
+            aria-label={t("header.language")}
         >
-            {#each themes as theme}
+            {#each LOCALES as loc}
                 <button
-                    class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 {theme.id ===
-                    currentTheme.id
+                    class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 {loc.id ===
+                    i18n.locale
                         ? 'bg-neon-cyan/15 text-neon-cyan'
                         : 'text-ink/80 hover:bg-neon-cyan/10'}"
                     role="menuitemradio"
-                    aria-checked={theme.id === currentTheme.id}
-                    onclick={() => choose(theme.id)}
+                    aria-checked={loc.id === i18n.locale}
+                    onclick={() => choose(loc.id)}
                 >
-                    <MorphIcon
-                        icon={ICON_MAP[theme.id]}
-                        class="h-4 w-4"
-                        spring="snappy"
-                        reducedMotion="user"
-                        aria-hidden="true"
-                    />
-                    <span>{t("theme." + theme.id)}</span>
-                    {#if theme.id === currentTheme.id}
+                    <span>{loc.label}</span>
+                    {#if loc.id === i18n.locale}
                         <span class="ml-auto" aria-hidden="true">✓</span>
                     {/if}
                 </button>

@@ -1,6 +1,7 @@
 <script>
     import { ethVars, refreshTokenBalance } from "../lib/ethers.svelte.js";
     import { closeModal } from "../lib/modal.svelte.js";
+    import { t } from "../lib/i18n.svelte.js";
     import { parseEther, formatUnits } from "ethers";
 
     // State variables
@@ -20,18 +21,18 @@
 
     async function buyTokens() {
         if (amount <= 0) {
-            error = "Please enter a valid amount";
+            error = t("common.validAmount");
             return;
         }
 
         if (ethVars.contract === null) {
-            error = "Please connect your wallet first to buy tokens.";
+            error = t("buy.connectFirst");
             return;
         }
 
         try {
             isBuying = true;
-            transactionStatus = "Processing transaction...";
+            transactionStatus = t("common.transactionProcessing");
 
             let tx = await ethVars.contract.buyDRNK({
                 value: parseEther(amount.toString()),
@@ -40,10 +41,10 @@
 
             console.log(receipt);
             await refreshTokenBalance();
-            transactionStatus = "Purchase successful!";
+            transactionStatus = t("buy.success");
         } catch (err) {
             const e = /** @type {Error} */ (err);
-            error = "Transaction failed: " + e.message;
+            error = t("common.transactionFailed", { message: e.message });
             transactionStatus = "";
         } finally {
             isBuying = false;
@@ -52,9 +53,11 @@
 </script>
 
 <div class="modal-header">
-    <h3 id="buy-tokens-title">Buy Tokens</h3>
-    <button class="modal-close" onclick={closeModal} aria-label="Close"
-        >×</button
+    <h3 id="buy-tokens-title">{t("buy.title")}</h3>
+    <button
+        class="modal-close"
+        onclick={closeModal}
+        aria-label={t("common.close")}>×</button
     >
 </div>
 
@@ -62,18 +65,24 @@
     <div class="balance-info">
         {#if ethVars.signerAddress}
             <p>
-                Your Balance: {ethVars.tokenBalance === null
-                    ? "—"
-                    : formatUnits(ethVars.tokenBalance, ethVars.tokenDecimals)}
-                {ethVars.tokenSymbol}
+                {t("common.yourBalance", {
+                    balance:
+                        ethVars.tokenBalance === null
+                            ? "—"
+                            : formatUnits(
+                                  ethVars.tokenBalance,
+                                  ethVars.tokenDecimals,
+                              ),
+                    symbol: ethVars.tokenSymbol,
+                })}
             </p>
         {:else}
-            <p>Connect your wallet to see your balance</p>
+            <p>{t("common.connectToSeeBalance")}</p>
         {/if}
     </div>
 
     <div class="field-group">
-        <label for="token-amount" class="field-label">Amount (ETH):</label>
+        <label for="token-amount" class="field-label">{t("buy.amount")}</label>
         <input
             id="token-amount"
             bind:this={amountInput}
@@ -81,7 +90,7 @@
             min="0.01"
             step="0.01"
             bind:value={amount}
-            placeholder="Enter amount"
+            placeholder={t("common.enterAmount")}
             class="field-input"
         />
     </div>
@@ -91,7 +100,7 @@
         onclick={buyTokens}
         disabled={isBuying || amount <= 0}
     >
-        {isBuying ? "Processing..." : "Buy Tokens"}
+        {isBuying ? t("common.processing") : t("action.buyTokens")}
     </button>
 
     {#if transactionStatus}

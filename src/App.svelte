@@ -9,7 +9,11 @@
     import GetDRNKModal from "./components/GetDRNKModal.svelte";
     import RegisterDappModal from "./components/RegisterDappModal.svelte";
     import ThemeToggle from "./components/ThemeToggle.svelte";
+    import LangToggle from "./components/LangToggle.svelte";
+    import Hero from "./components/Hero.svelte";
+    import Footer from "./components/Footer.svelte";
     import { modalState, closeModal } from "./lib/modal.svelte.js";
+    import { t } from "./lib/i18n.svelte.js";
     import { MorphIcon } from "morphicons/svelte";
     import { Menu, X } from "lucide";
 
@@ -71,13 +75,13 @@
     }
 </script>
 
-<a href="#main-content" class="skip-link">Skip to main content</a>
+<a href="#main-content" class="skip-link">{t("header.skip")}</a>
 
 <header
     class="sticky top-0 z-100 border-b border-neon-cyan/30 bg-void/80 px-4 py-3 sm:px-6 lg:px-10"
 >
     <div class="mx-auto flex max-w-350 items-center justify-between gap-3">
-        <div class="flex items-center gap-3" aria-label="DappRank home">
+        <div class="flex items-center gap-3" aria-label={t("header.home")}>
             <svg
                 class="h-8 w-8 shrink-0 text-neon-pink"
                 viewBox="0 0 24 24"
@@ -102,7 +106,7 @@
         <!-- Desktop controls -->
         <nav
             class="hidden flex-wrap items-center justify-end gap-2 md:flex"
-            aria-label="Primary"
+            aria-label={t("header.primary")}
         >
             <GetDRNK />
             <DappsData />
@@ -110,15 +114,18 @@
             <WalletConnector />
         </nav>
 
-        <!-- Theme toggle + mobile menu toggle (always visible) -->
+        <!-- Language + theme toggles + mobile menu toggle (always visible) -->
         <div class="flex items-center gap-2">
+            <LangToggle />
             <ThemeToggle />
             <button
                 class="btn-icon md:hidden"
                 onclick={toggleMenu}
                 aria-expanded={menuOpen}
                 aria-controls="mobile-menu"
-                aria-label={menuOpen ? "Close menu" : "Open menu"}
+                aria-label={menuOpen
+                    ? t("header.closeMenu")
+                    : t("header.openMenu")}
             >
                 <MorphIcon
                     icon={menuOpen ? X : Menu}
@@ -135,7 +142,7 @@
         <nav
             id="mobile-menu"
             class="mobile-menu mx-auto mt-3 grid max-w-350 grid-cols-2 gap-2 md:hidden"
-            aria-label="Mobile"
+            aria-label={t("header.mobile")}
         >
             <GetDRNK />
             <DappsData />
@@ -149,9 +156,12 @@
 
 <main id="main-content" class="relative text-center page-gutter">
     <div class="bg-scene"></div>
+    <Hero />
     <InvestorInsights />
     <DappRankList />
 </main>
+
+<Footer />
 
 {#if modalState.active}
     <!-- Rendered at the app root so no ancestor transform/filter/backdrop-filter

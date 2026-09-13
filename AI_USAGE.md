@@ -270,3 +270,79 @@ el storage `bytes32` del contrato.
 - `bun run build` compila el frontend sin errores.
 - **Pendiente del equipo**: registrar `dapprank.eth` en ENSv2 (Sepolia) y
   ejecutar el script de setup para que los subnames resuelvan en la UI.
+
+---
+
+## Mejora de interfaz: contexto, i18n ES/EN y paleta sobria (2026-09-13)
+
+### Contexto
+
+El equipo pidió hacer el proyecto más llamativo y mejorar la experiencia de
+usuario, señalando que la página se veía "vacía". La IA propuso un plan
+priorizado: (1) dar contexto al producto (hero + how it works + footer),
+(2) i18n ES/EN, (3) búsqueda/filtros, (4) detalle de dApp, (5) activity feed,
+(6) gráficas y (7) skeletons de carga. El equipo aprobó los **paquetes 1 y 2**
+y la dirección visual sobria tipo ultrasound.money, dejando el resto para
+iteraciones futuras.
+
+### Decisiones del equipo (dirigieron esta fase)
+
+- Aprobar el paquete 1 (hero + how it works + footer) y el paquete 2
+  (i18n ES/EN con toggle en el header).
+- Cambiar la estética neon/cyberpunk por una **paleta sobria esmeralda/teal**
+  inspirada en ultrasound.money (manteniendo los nombres de tokens `neon-*`
+  para no tocar los componentes).
+- Idioma por defecto **EN** (jueces del hackathon), con toggle a ES que
+  persiste en localStorage.
+- Enlazar whitepaper/docs al repo de GitHub (el build estático de Vite no
+  incluye los `.md` del repo).
+
+### Implementación de la IA (bajo esa dirección)
+
+**i18n (paquete 2):**
+
+- **`src/lib/i18n.svelte.js`** (nuevo): diccionario EN/ES (~150 claves) con
+  `t(key, params)`, `setLocale()` y persistencia en localStorage. Aplica el
+  atributo `lang` dinámico a `<html>`. Sin dependencias — encaja con el estilo
+  del proyecto (libs hechas a mano como `modal.svelte.js`).
+- **`src/components/LangToggle.svelte`** (nuevo): selector 🌐 EN/ES en el
+  header, mismo patrón de menú que `ThemeToggle`.
+- **Todos los componentes con textos** migrados a `t()`: `App.svelte`,
+  `DappRankList.svelte` (incluye los labels de tier vía `$derived` para que
+  reaccionen al cambio de idioma), `InvestorInsights.svelte`, los 3 modales
+  (`Vote4DappModal`, `GetDRNKModal`, `RegisterDappModal` — incluidos los
+  mensajes de error que estaban en español), botones del header (`GetDRNK`,
+  `DappsData`, `RegisterDapp`, `WalletConnector`) y `ThemeToggle`.
+
+**Contexto de producto (paquete 1):**
+
+- **`src/components/Hero.svelte`** (nuevo): hero con badge "Live on Sepolia ·
+  Indexed by The Graph", tagline, subtítulo explicando SRWV y CTAs (Vote now,
+  Register your dApp, Read the whitepaper). Debajo, "How it works" en 3 pasos
+  y "Why DappRank" con 3 tarjetas (Anti-whale, Ultrasound money, On-chain
+  transparency).
+- **`src/components/Footer.svelte`** (nuevo): tagline, links al whitepaper/
+  docs/código, direcciones de los contratos en Sepolia (con Etherscan),
+  endpoint del subgraph y crédito "Built for ETHOnline 2026 · The Graph Prize".
+
+**Paleta sobria (dirección visual):**
+
+- **`src/app.css`**: la paleta por defecto pasa de cian `#00f7ff`/magenta
+  `#ff00cc` sobre azul a **esmeralda/teal** (`#2dd4bf`, rosa suave `#f472b6`)
+  sobre verde-negro `#0a0f0d`. Los temas Light y Dark quedan como variantes
+  sobrias de la misma paleta (valores oscurecidos para mantener WCAG AA).
+- **`src/lib/theme.svelte.js`**: label del tema "Neon" → "Emerald" (los ids
+  `original`/`light`/`dark` no cambian).
+- **`index.html`**: favicon en teal y título "DappRank — Decentralized dApp
+  Ranking".
+
+### Validación
+
+- `bun run build` (forge + vite) sin errores.
+- Diagnostics del proyecto: 0 errores (se corrigió el tipado de `setLocale` y
+  el export de `$state` reasignado, que Svelte 5 no permite — se usa un objeto
+  `i18n` mutado, mismo patrón que `modalState`/`currentTheme`).
+- Smoke test: `vite preview` sirve la página; las cadenas EN/ES están en el
+  bundle compilado y la paleta teal reemplazó al cian neón en el CSS.
+- **Pendiente del equipo**: revisar visualmente en navegador (desktop + móvil)
+  y decidir si el idioma por defecto debe ser ES en lugar de EN.

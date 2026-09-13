@@ -8,6 +8,7 @@
         refreshTokenBalance,
     } from "../lib/ethers.svelte.js";
     import { closeModal } from "../lib/modal.svelte.js";
+    import { t } from "../lib/i18n.svelte.js";
     import { encodeBytes32String, parseEther, formatEther } from "ethers";
 
     // State variables
@@ -75,13 +76,13 @@
     }
 
     function validate() {
-        if (!dappName.trim()) return "Please enter a name for your dapp.";
+        if (!dappName.trim()) return t("register.nameRequired");
         if (dappName.length > NAME_MAX_LENGTH) {
-            return `Dapp names must be ${NAME_MAX_LENGTH} characters or fewer.`;
+            return t("register.nameTooLong", { max: NAME_MAX_LENGTH });
         }
-        if (!cid.trim()) return "Please enter the IPFS CID of your dapp.";
+        if (!cid.trim()) return t("register.cidRequired");
         if (!isValidCid(cid.trim())) {
-            return "That doesn’t look like a valid IPFS CID.";
+            return t("register.cidInvalid");
         }
         return null;
     }
@@ -101,7 +102,7 @@
                 await loadContractFees();
             }
         } else {
-            error = "Wallet connection was cancelled. Please try again.";
+            error = t("register.walletCancelled");
         }
         ethVars.isLoading = false;
     }
@@ -113,13 +114,13 @@
             return;
         }
         if (ethVars.contract === null) {
-            error = "Please connect your wallet first to register a dapp.";
+            error = t("register.connectFirst");
             return;
         }
 
         try {
             isRegistering = true;
-            transactionStatus = "Processing transaction…";
+            transactionStatus = t("common.transactionProcessing");
             error = "";
 
             // Convert the dapp name to bytes32 for the contract call
@@ -137,7 +138,7 @@
 
             await refreshDappsList();
             await refreshTokenBalance();
-            transactionStatus = "Dapp registered successfully!";
+            transactionStatus = t("register.success");
 
             setTimeout(() => {
                 closeModal();
@@ -158,25 +159,27 @@
     function friendlyError(err) {
         const msg = err instanceof Error ? err.message : String(err);
         if (/DappNameExists|already exists|name is taken/i.test(msg)) {
-            return "That dapp name is already registered. Please choose another.";
+            return t("register.exists");
         }
         if (/listing fee uncovered|listing fee/i.test(msg)) {
-            return "The listing fee was not covered. Please try again.";
+            return t("register.feeUncovered");
         }
         if (/user rejected|denied|rejected/i.test(msg)) {
-            return "Transaction was rejected in your wallet. You can try again.";
+            return t("register.rejected");
         }
         if (/insufficient funds|insufficient/i.test(msg)) {
-            return "Your wallet has insufficient funds to cover the listing fee.";
+            return t("register.insufficientFunds");
         }
-        return "Registration failed: " + msg;
+        return t("register.failed", { message: msg });
     }
 </script>
 
 <div class="modal-header">
-    <h3 id="register-dapp-title">Register a Dapp</h3>
-    <button class="modal-close" onclick={closeModal} aria-label="Close"
-        >×</button
+    <h3 id="register-dapp-title">{t("register.title")}</h3>
+    <button
+        class="modal-close"
+        onclick={closeModal}
+        aria-label={t("common.close")}>×</button
     >
 </div>
 
@@ -185,11 +188,11 @@
         class="rounded-md border border-neon-pink/40 bg-neon-pink/10 p-3 text-center"
     >
         <p class="text-sm font-semibold text-neon-pink">
-            Listing fee: {displayListingFee()} ETH
+            {t("register.listingFee", { fee: displayListingFee() })}
         </p>
         {#if displayBonus()}
             <p class="mt-1 text-xs opacity-80">
-                Includes a welcome bonus of {displayBonus()} DRNK
+                {t("register.bonus", { bonus: displayBonus() ?? "" })}
             </p>
         {/if}
     </div>
@@ -197,36 +200,41 @@
     {#if ethVars.signerAddress}
         <div class="flex flex-col gap-4">
             <div class="field-group">
-                <label for="dapp-name" class="field-label">Dapp Name</label>
+                <label for="dapp-name" class="field-label"
+                    >{t("register.name")}</label
+                >
                 <input
                     id="dapp-name"
                     bind:this={nameInput}
                     type="text"
                     maxlength={NAME_MAX_LENGTH}
                     bind:value={dappName}
-                    placeholder="e.g. my-dapp"
+                    placeholder={t("register.namePlaceholder")}
                     class="field-input"
                     aria-describedby="dapp-name-hint"
                 />
                 <p id="dapp-name-hint" class="text-xs opacity-70">
-                    {dappName.length}/{NAME_MAX_LENGTH} characters — this becomes
-                    your on-chain identity.
+                    {t("register.nameHint", {
+                        count: dappName.length,
+                        max: NAME_MAX_LENGTH,
+                    })}
                 </p>
             </div>
 
             <div class="field-group">
-                <label for="dapp-cid" class="field-label">IPFS CID</label>
+                <label for="dapp-cid" class="field-label"
+                    >{t("register.cid")}</label
+                >
                 <input
                     id="dapp-cid"
                     type="text"
                     bind:value={cid}
-                    placeholder="e.g. bafybeid…"
+                    placeholder={t("register.cidPlaceholder")}
                     class="field-input"
                     aria-describedby="dapp-cid-hint"
                 />
                 <p id="dapp-cid-hint" class="text-xs opacity-70">
-                    The content identifier (CID) of your dapp’s metadata on
-                    IPFS.
+                    {t("register.cidHint")}
                 </p>
             </div>
 
@@ -236,8 +244,8 @@
                 disabled={isRegistering || !dappName.trim() || !cid.trim()}
             >
                 {isRegistering
-                    ? "Processing…"
-                    : `Register for ${displayListingFee()} ETH`}
+                    ? t("common.processing")
+                    : t("register.forFee", { fee: displayListingFee() })}
             </button>
 
             {#if transactionStatus}
@@ -251,7 +259,7 @@
     {:else}
         <div class="text-center">
             <p class="text-sm text-ink/90">
-                Connect your wallet to register a dapp on-chain.
+                {t("register.connectToRegister")}
             </p>
             <button
                 bind:this={connectButton}
@@ -259,7 +267,9 @@
                 onclick={connectWalletFirst}
                 disabled={ethVars.isLoading}
             >
-                {ethVars.isLoading ? "Connecting…" : "Connect Wallet"}
+                {ethVars.isLoading
+                    ? t("common.connecting")
+                    : t("common.connectWallet")}
             </button>
             {#if error}
                 <p class="error-msg" role="alert">{error}</p>

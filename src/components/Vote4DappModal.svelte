@@ -5,6 +5,7 @@
         refreshDappsList,
     } from "../lib/ethers.svelte.js";
     import { closeModal, modalState } from "../lib/modal.svelte.js";
+    import { t } from "../lib/i18n.svelte.js";
     import { parseEther, formatUnits, toUtf8String, getBigInt } from "ethers";
     import { MorphIcon } from "morphicons/svelte";
     import { ThumbsUp } from "lucide";
@@ -117,23 +118,23 @@
 
     async function voteDapp() {
         if (amount <= 0 || !dappName) {
-            error = "Please enter a valid amount and dapp name";
+            error = t("vote.validInput");
             return;
         }
 
         if (rate < 1 || rate > 100) {
-            error = "Vote rate must be between 1 and 100";
+            error = t("vote.rateRange");
             return;
         }
 
         if (ethVars.contract === null) {
-            error = "Please connect your wallet first to vote.";
+            error = t("vote.connectFirst");
             return;
         }
 
         try {
             isVoting = true;
-            transactionStatus = "Processing transaction...";
+            transactionStatus = t("common.transactionProcessing");
 
             // dappName is already the raw bytes32 name from the contract, so it
             // is passed through unchanged (no re-encoding).
@@ -143,9 +144,7 @@
             const amountWei = parseEther(amount.toString());
 
             if (ethVars.tokenContract === null) {
-                throw new Error(
-                    "Token contract not connected. Reconnect your wallet.",
-                );
+                throw new Error(t("vote.tokenNotConnected"));
             }
 
             // Pre-flight checks — the contract reverts silently on several
@@ -155,12 +154,13 @@
                 ethVars.signerAddress,
             );
             if (balance === 0n) {
-                error =
-                    "No tienes DRNK. Compra tokens con “Buy Tokens” (o recibe un airdrop) antes de votar.";
+                error = t("vote.noDrnk");
                 return;
             }
             if (balance < amountWei) {
-                error = `Saldo insuficiente: tienes ${formatUnits(balance, ethVars.tokenDecimals)} DRNK.`;
+                error = t("vote.insufficient", {
+                    balance: formatUnits(balance, ethVars.tokenDecimals),
+                });
                 return;
             }
             // Fan status — the contract only lets active fans vote. A fan is
@@ -178,20 +178,20 @@
             if (fanExpires === 0n && fanMultiplier === 0n) {
                 // Never registered as a fan (e.g. tokens received via transfer).
                 error = topUpOpen
-                    ? "No estás registrado como fan. Compra DRNK con “Buy Tokens” para activar tu cuenta de fan."
-                    : "No estás registrado como fan y la ventana de compra ya expiró. Contacta al admin para recibir un airdrop.";
+                    ? t("vote.notFanTopUp")
+                    : t("vote.notFanClosed");
                 return;
             }
             if (fanExpires <= now) {
                 error = topUpOpen
-                    ? "Tu estatus de fan expiró. Compra DRNK para reactivarlo."
-                    : "Tu estatus de fan expiró y la ventana de compra ya cerró. Contacta al admin para recibir un airdrop.";
+                    ? t("vote.fanExpiredTopUp")
+                    : t("vote.fanExpiredClosed");
                 return;
             }
             const dappActive =
                 await ethVars.contract.DappNameIsActive(dappName);
             if (!dappActive) {
-                error = "Esta dApp no está activa actualmente.";
+                error = t("vote.notActive");
                 return;
             }
 
@@ -203,13 +203,13 @@
                 ethVars.contractAddress,
             );
             if (allowance < amountWei) {
-                transactionStatus = "Approving DRNK spend...";
+                transactionStatus = t("vote.approving");
                 const approval = await ethVars.tokenContract.approve(
                     ethVars.contractAddress,
                     amountWei,
                 );
                 await approval.wait();
-                transactionStatus = "Processing transaction...";
+                transactionStatus = t("common.transactionProcessing");
             }
 
             // Call the voteDapp function
@@ -225,7 +225,7 @@
 
             await refreshTokenBalance();
             await refreshDappsList();
-            transactionStatus = "Vote submitted successfully!";
+            transactionStatus = t("vote.success");
 
             // Reset form after successful vote
             setTimeout(() => {
@@ -238,7 +238,7 @@
             }, 2000);
         } catch (err) {
             const e = /** @type {Error} */ (err);
-            error = "Transaction failed: " + e.message;
+            error = t("common.transactionFailed", { message: e.message });
             transactionStatus = "";
         } finally {
             isVoting = false;
@@ -247,9 +247,11 @@
 </script>
 
 <div class="modal-header">
-    <h3 id="vote-dapp-title">Vote on Dapps</h3>
-    <button class="modal-close" onclick={closeModal} aria-label="Close"
-        >×</button
+    <h3 id="vote-dapp-title">{t("vote.title")}</h3>
+    <button
+        class="modal-close"
+        onclick={closeModal}
+        aria-label={t("common.close")}>×</button
     >
 </div>
 
@@ -257,29 +259,37 @@
     <div class="balance-info">
         {#if ethVars.signerAddress}
             <p>
-                Your Balance: {ethVars.tokenBalance === null
-                    ? "—"
-                    : formatUnits(ethVars.tokenBalance, ethVars.tokenDecimals)}
-                {ethVars.tokenSymbol}
+                {t("common.yourBalance", {
+                    balance:
+                        ethVars.tokenBalance === null
+                            ? "—"
+                            : formatUnits(
+                                  ethVars.tokenBalance,
+                                  ethVars.tokenDecimals,
+                              ),
+                    symbol: ethVars.tokenSymbol,
+                })}
             </p>
         {:else}
-            <p>Connect your wallet to see your balance</p>
+            <p>{t("common.connectToSeeBalance")}</p>
         {/if}
     </div>
 
     <div class="flex flex-col gap-4">
         <div class="field-group">
-            <label for="dapp-name" class="field-label">Dapp:</label>
+            <label for="dapp-name" class="field-label">{t("vote.dapp")}</label>
             <NeonSelect
                 id="dapp-name"
                 bind:value={dappName}
                 options={dappOptions}
-                placeholder="Select a dapp…"
+                placeholder={t("vote.selectDapp")}
             />
         </div>
 
         <div class="field-group">
-            <label for="vote-amount" class="field-label">Amount (DRNK):</label>
+            <label for="vote-amount" class="field-label"
+                >{t("vote.amount")}</label
+            >
             <input
                 id="vote-amount"
                 bind:this={amountInput}
@@ -287,14 +297,13 @@
                 min="0.01"
                 step="0.01"
                 bind:value={amount}
-                placeholder="Enter amount"
+                placeholder={t("common.enterAmount")}
                 class="field-input"
             />
         </div>
 
         <div class="field-group">
-            <label for="vote-rate" class="field-label">Vote Rate (1-100):</label
-            >
+            <label for="vote-rate" class="field-label">{t("vote.rate")}</label>
             <input
                 id="vote-rate"
                 type="range"
@@ -315,20 +324,19 @@
                 aria-live="polite"
             >
                 <div class="flex items-center justify-between text-sm">
-                    <span class="opacity-70">Poder de voto</span>
+                    <span class="opacity-70">{t("vote.power")}</span>
                     <span class="tabular-nums font-semibold text-neon-cyan"
                         >√{amount} = {preview.fanWeightDisplay}</span
                     >
                 </div>
                 <div class="mt-2 flex items-center justify-between text-sm">
-                    <span class="opacity-70">Rating estimado</span>
+                    <span class="opacity-70">{t("vote.estimated")}</span>
                     <span class="tabular-nums font-semibold {preview.tierClass}"
                         >{preview.currentRate} → {preview.newRate}</span
                     >
                 </div>
                 <p class="mt-2 text-xs opacity-60">
-                    La raíz cuadrada frena el peso de las ballenas: tu
-                    influencia crece más lento que tus tokens.
+                    {t("vote.sqrtNote")}
                 </p>
             </div>
         {/if}
@@ -338,7 +346,7 @@
             onclick={voteDapp}
             disabled={isVoting || amount <= 0 || !dappName}
         >
-            {isVoting ? "Processing..." : "Submit Vote"}
+            {isVoting ? t("common.processing") : t("vote.submit")}
         </button>
 
         {#if transactionStatus}

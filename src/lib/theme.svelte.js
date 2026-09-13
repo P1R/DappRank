@@ -5,7 +5,7 @@ const STORAGE_KEY = "dapprank-theme";
 
 /** @type {{ id: string; label: string }[]} */
 export const themes = [
-  { id: "original", label: "Neon" },
+  { id: "original", label: "Emerald" },
   { id: "light", label: "Light" },
   { id: "dark", label: "Dark" },
 ];
