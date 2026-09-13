@@ -7,9 +7,13 @@
 version: "3"
 services:
   graph-node:
-    image: graphprotocol/graph-node:latest
+    image: graphprotocol/graph-node:v0.44.0
+    # Official graph-node images are amd64-only. On Apple Silicon this runs
+    # under Rosetta 2 emulation (slower, but works for small subgraphs).
+    platform: linux/amd64
     ports:
       - "8000:8000"
+      - "8020:8020"
     depends_on:
       - ipfs
       - postgres
@@ -20,19 +24,25 @@ services:
       postgres_db: graph-node
       ipfs: "http://ipfs:5001"
       GRAPH_LOG: info
-      # Sepolia public RPC/WS endpoints (no API key needed)
-      ETHEREUM_RPC: https://ethereum-sepolia-rpc.publicnode.com
-      ETHEREUM_NETWORK: sepolia
-      ETHEREUM_WS: wss://ethereum-sepolia-ws.publicnode.com
+      # This image expects the lowercase `ethereum` var with <NETWORK>:<URL>
+      # format (no ETHEREUM_RPC/ETHEREUM_NETWORK/ETHEREUM_WS mapping in /start).
+      ethereum: "sepolia:https://ethereum-sepolia-rpc.publicnode.com"
   ipfs:
     image: ipfs/kubo:v0.17.0
     ports:
       - "5001:5001"
   postgres:
-    image: postgres:14
+    image: postgres:16
     ports:
       - "5432:5432"
+    command:
+      [
+        "postgres",
+        "-cshared_preload_libraries=pg_stat_statements",
+        "-cmax_connections=200",
+      ]
     environment:
       POSTGRES_USER: graph-node
       POSTGRES_PASSWORD: let-me-in
       POSTGRES_DB: graph-node
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"

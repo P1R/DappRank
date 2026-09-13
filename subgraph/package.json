@@ -6,7 +6,7 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy": "graph deploy --studio dapprank",
+    "deploy": "graph deploy dapprank --version-label v0.0.2",
     "create-local": "graph create --node http://localhost:8020 dapprank",
     "remove-local": "graph remove --node http://localhost:8020 dapprank",
     "deploy-local": "graph deploy --node http://localhost:8020 --ipfs http://localhost:5001 dapprank"
