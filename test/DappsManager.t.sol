@@ -10,7 +10,13 @@ contract DappsManagerTest is Test {
     DappRank public drnkToken;
 
     address nonAdmin = address(0x20);
-    address[] testUsers = [address(0x1), address(0x2), address(0x3), address(0x4), address(0x5)];
+    address[] testUsers = [
+        address(0x1),
+        address(0x2),
+        address(0x3),
+        address(0x4),
+        address(0x5)
+    ];
 
     uint256 listingFee = 100e16;
     uint256 burningFee = 1000; // 10%
@@ -39,7 +45,12 @@ contract DappsManagerTest is Test {
 
     function testDemoAirdropRevertsForNonAdmin() public {
         vm.prank(nonAdmin);
-        vm.expectRevert(abi.encodeWithSelector(DappsManager.CallerNotAdmin.selector, nonAdmin));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                DappsManager.CallerNotAdmin.selector,
+                nonAdmin
+            )
+        );
         dappsMgr.demoAirdrop(testUsers);
     }
 
@@ -75,7 +86,7 @@ contract DappsManagerTest is Test {
         // Retrive Dapp
         string memory retCID;
         bytes32 status;
-        (retCID,,,,,,, status) = dappsMgr.getDappInfo(dappName);
+        (retCID, , , , , , , status) = dappsMgr.getDappInfo(dappName);
         //console2.log("retrived status: ");
         //console2.logBytes32(status);
         //console2.log("retrived cid: ", retCID);
@@ -83,17 +94,17 @@ contract DappsManagerTest is Test {
         assertEq(cid, retCID);
         // Then Dapp gets approved
         dappsMgr.approveDapp(dappName);
-        (retCID,,,,,,, status) = dappsMgr.getDappInfo(dappName);
+        (retCID, , , , , , , status) = dappsMgr.getDappInfo(dappName);
         assertEq(status, bytes32("Active"));
         assertEq(cid, retCID);
         // After the Dapp gets banned
         dappsMgr.banDapp(dappName);
-        (retCID,,,,,,, status) = dappsMgr.getDappInfo(dappName);
+        (retCID, , , , , , , status) = dappsMgr.getDappInfo(dappName);
         assertEq(status, bytes32("Banned"));
         assertEq(cid, retCID);
         // Then Dapp gets approved Again
         dappsMgr.approveDapp(dappName);
-        (retCID,,,,,,, status) = dappsMgr.getDappInfo(dappName);
+        (retCID, , , , , , , status) = dappsMgr.getDappInfo(dappName);
         assertEq(status, bytes32("Active"));
         assertEq(cid, retCID);
         // Remove the Dapp
@@ -111,7 +122,7 @@ contract DappsManagerTest is Test {
         // Retrive Dapp
         string memory retCID;
         bytes32 status;
-        (retCID,,,,,,, status) = dappsMgr.getDappInfo(dappName);
+        (retCID, , , , , , , status) = dappsMgr.getDappInfo(dappName);
         assertEq(status, bytes32("Submitted"));
         assertEq(cid, retCID);
         // Remove Dapp knowing the index...
@@ -120,9 +131,20 @@ contract DappsManagerTest is Test {
     }
 
     function testAddandRemoveDappMany() external {
-        bytes32[5] memory dappNames =
-            [bytes32("dapp1"), bytes32("dapp2"), bytes32("dapp3"), bytes32("dapp4"), bytes32("dapp5")];
-        string[5] memory cids = ["QmNewCID1", "QmNewCID2", "QmNewCID3", "QmNewCID4", "QmNewCID5"];
+        bytes32[5] memory dappNames = [
+            bytes32("dapp1"),
+            bytes32("dapp2"),
+            bytes32("dapp3"),
+            bytes32("dapp4"),
+            bytes32("dapp5")
+        ];
+        string[5] memory cids = [
+            "QmNewCID1",
+            "QmNewCID2",
+            "QmNewCID3",
+            "QmNewCID4",
+            "QmNewCID5"
+        ];
         // Retrive Dapp
         string memory retCID;
         bytes32 status;
@@ -132,7 +154,7 @@ contract DappsManagerTest is Test {
         }
 
         for (uint256 i; i < dappNames.length; i++) {
-            (retCID,,,,,,, status) = dappsMgr.getDappInfo(dappNames[i]);
+            (retCID, , , , , , , status) = dappsMgr.getDappInfo(dappNames[i]);
             assertEq(status, bytes32("Submitted"));
             assertEq(retCID, cids[i]);
         }
@@ -144,7 +166,10 @@ contract DappsManagerTest is Test {
             console2.log(dappsMgr.DappNameExists(dappNames[i - 1]));
             dappsMgr.removeDapp(i - 1, dappNames[i - 1]);
             console2.logBytes32(dappNames[i - 1]);
-            console2.log("removed dappname:", string(abi.encodePacked(dappNames[i - 1])));
+            console2.log(
+                "removed dappname:",
+                string(abi.encodePacked(dappNames[i - 1]))
+            );
             console2.log(dappsMgr.DappNameExists(dappNames[i - 1]));
             dappN = dappsMgr.getAllDappNames();
         }
@@ -174,7 +199,10 @@ contract DappsManagerTest is Test {
         for (uint256 i; i < testUsers.length; i++) {
             vm.prank(testUsers[i]);
             drnkToken.approve(address(dappsMgr), bonus);
-            uint256 allowanceAmount = drnkToken.allowance(testUsers[i], address(dappsMgr));
+            uint256 allowanceAmount = drnkToken.allowance(
+                testUsers[i],
+                address(dappsMgr)
+            );
             assertEq(allowanceAmount, bonus);
         }
 
@@ -193,9 +221,20 @@ contract DappsManagerTest is Test {
             assertEq(drnkToken.balanceOf(testUsers[i]), bonus);
         }
         // simulated dapps
-        bytes32[5] memory dappNames =
-            [bytes32("dapp1"), bytes32("dapp2"), bytes32("dapp3"), bytes32("dapp4"), bytes32("dapp5")];
-        string[5] memory cids = ["QmNewCID1", "QmNewCID2", "QmNewCID3", "QmNewCID4", "QmNewCID5"];
+        bytes32[5] memory dappNames = [
+            bytes32("dapp1"),
+            bytes32("dapp2"),
+            bytes32("dapp3"),
+            bytes32("dapp4"),
+            bytes32("dapp5")
+        ];
+        string[5] memory cids = [
+            "QmNewCID1",
+            "QmNewCID2",
+            "QmNewCID3",
+            "QmNewCID4",
+            "QmNewCID5"
+        ];
         // Retrive Dapp
         string memory retCID;
         bytes32 status;
@@ -207,7 +246,7 @@ contract DappsManagerTest is Test {
         }
 
         for (uint256 i; i < dappNames.length; i++) {
-            (retCID,,,,,,, status) = dappsMgr.getDappInfo(dappNames[i]);
+            (retCID, , , , , , , status) = dappsMgr.getDappInfo(dappNames[i]);
             assertEq(status, bytes32("Submitted"));
             assertEq(retCID, cids[i]);
         }
@@ -215,7 +254,7 @@ contract DappsManagerTest is Test {
             dappsMgr.approveDapp(dappNames[i]);
         }
         for (uint256 i; i < dappNames.length; i++) {
-            (retCID,,,,,,, status) = dappsMgr.getDappInfo(dappNames[i]);
+            (retCID, , , , , , , status) = dappsMgr.getDappInfo(dappNames[i]);
             assertEq(status, bytes32("Active"));
             assertEq(retCID, cids[i]);
         }
@@ -227,8 +266,14 @@ contract DappsManagerTest is Test {
         //// allow daggTokens from testUsers to dappsMgr
         for (uint256 i; i < testUsers.length; i++) {
             vm.prank(testUsers[i]);
-            drnkToken.approve(address(dappsMgr), (vote_amount * 2 * i) + vote_amount); // times I for make a dyanmic PoC
-            uint256 allowanceAmount = drnkToken.allowance(testUsers[i], address(dappsMgr));
+            drnkToken.approve(
+                address(dappsMgr),
+                (vote_amount * 2 * i) + vote_amount
+            ); // times I for make a dyanmic PoC
+            uint256 allowanceAmount = drnkToken.allowance(
+                testUsers[i],
+                address(dappsMgr)
+            );
             assertEq(allowanceAmount, (vote_amount * 2 * i) + vote_amount);
         }
 
@@ -237,7 +282,11 @@ contract DappsManagerTest is Test {
             // we only vote for the first dapp in this demo.
             // simulate vote with the dyamic amount where rates are Sumi(i*10+1)=1,25,49,73,97.
             vm.prank(testUsers[i]);
-            dappsMgr.voteDapp(dappNames[0], (vote_amount * 2 * i) + vote_amount, i * 24 + 1);
+            dappsMgr.voteDapp(
+                dappNames[0],
+                (vote_amount * 2 * i) + vote_amount,
+                i * 24 + 1
+            );
             // ToDo for better debug the access with solidity gimnastics
             //console2.log("-----------------");
             //console2.log("User", testUsers[i]);
@@ -253,7 +302,16 @@ contract DappsManagerTest is Test {
         uint256 balance;
         uint256 burned;
         address owner;
-        (, rate, weight_votes_sum, weight_total_sum, balance, burned, owner,) = dappsMgr.getDappInfo(dappNames[0]);
+        (
+            ,
+            rate,
+            weight_votes_sum,
+            weight_total_sum,
+            balance,
+            burned,
+            owner,
+
+        ) = dappsMgr.getDappInfo(dappNames[0]);
         assertEq(rate, 60);
         assertEq(weight_votes_sum, 6380084467978);
         assertEq(weight_total_sum, 106138700962);
@@ -319,7 +377,14 @@ contract DappsManagerTest is Test {
         // First vote -> VoteCast (token also emits Transfer/Approval, filtered out)
         vm.prank(voter);
         vm.expectEmit(address(dappsMgr));
-        emit DappsManager.VoteCast(dappName, voter, 50, 10000000000, block.timestamp, 100e18);
+        emit DappsManager.VoteCast(
+            dappName,
+            voter,
+            50,
+            10000000000,
+            block.timestamp,
+            100e18
+        );
         dappsMgr.voteDapp(dappName, 100e18, 50);
 
         // Top up the voter again (first vote spent all their DRNK)
@@ -332,7 +397,14 @@ contract DappsManagerTest is Test {
         // Second vote -> check both DappsManager logs in order: VoteCast, TokensBurned
         vm.prank(voter);
         vm.expectEmit(address(dappsMgr));
-        emit DappsManager.VoteCast(dappName, voter, 50, 10000000000, block.timestamp, 100e18);
+        emit DappsManager.VoteCast(
+            dappName,
+            voter,
+            50,
+            10000000000,
+            block.timestamp,
+            100e18
+        );
         vm.expectEmit(address(dappsMgr));
         emit DappsManager.TokensBurned(dappName, 10e18);
         dappsMgr.voteDapp(dappName, 100e18, 50);
@@ -353,6 +425,23 @@ contract DappsManagerTest is Test {
         vm.expectEmit(address(dappsMgr));
         emit DappsManager.DappRemoved(dappName);
         dappsMgr.removeDapp(0, dappName);
+    }
+
+    function testBuyTwiceNoInflation() public {
+        address buyer = address(0x77);
+        vm.deal(buyer, 1 ether);
+
+        // First buy: new fan -> msg.value * 1000
+        vm.prank(buyer);
+        dappsMgr.buyDRNK{value: 0.01 ether}();
+        assertEq(drnkToken.balanceOf(buyer), 0.01 ether * 1000); // 10 DRNK
+
+        // Second buy: existing fan -> multiplier(1) * msg.value * 1000.
+        // Regression: multiplier used to start at `bonus`, minting
+        // bonus * value * 1000 (astronomical) on the 2nd buy.
+        vm.prank(buyer);
+        dappsMgr.buyDRNK{value: 0.01 ether}();
+        assertEq(drnkToken.balanceOf(buyer), 0.02 ether * 1000); // 20 DRNK total
     }
 
     function testTopUp() public {

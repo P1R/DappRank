@@ -141,7 +141,11 @@ contract DappsManager is AccessControl {
     // VoteCast incluye `amount` (desviación de la estrategia) para que el
     // subgraph calcule el delta de balance; DappRemoved y DappCIDUpdated
     // evitan datos obsoletos en el índice.
-    event DappRegistered(bytes32 indexed name, address indexed owner, string cid);
+    event DappRegistered(
+        bytes32 indexed name,
+        address indexed owner,
+        string cid
+    );
     event DappApproved(bytes32 indexed name);
     event DappBanned(bytes32 indexed name);
     event VoteCast(
@@ -153,7 +157,11 @@ contract DappsManager is AccessControl {
         uint256 amount
     );
     event TokensBurned(bytes32 indexed dapp, uint256 amount);
-    event DappCashOut(bytes32 indexed dapp, address indexed owner, uint256 amount);
+    event DappCashOut(
+        bytes32 indexed dapp,
+        address indexed owner,
+        uint256 amount
+    );
     event DappRemoved(bytes32 indexed name);
     event DappCIDUpdated(bytes32 indexed name, string cid);
 
@@ -207,7 +215,12 @@ contract DappsManager is AccessControl {
     mapping(bytes32 => Dapp) public dappsIndex;
     mapping(address => Fan) public fansIndex;
 
-    constructor(uint256 _listingFee, uint256 _daoFee, uint256 _burnFee, uint256 _bonus) {
+    constructor(
+        uint256 _listingFee,
+        uint256 _daoFee,
+        uint256 _burnFee,
+        uint256 _bonus
+    ) {
         drnk = new DappRank(address(this), address(this));
         listingFee = _listingFee; // fixed price updateable
         DAOFee = _daoFee; // ToDo: based on ultrasound model
@@ -221,7 +234,10 @@ contract DappsManager is AccessControl {
     }
 
     function topUpExpiresNowPlusWeek() public {
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(DAO_ROLE, msg.sender));
+        require(
+            hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
+                hasRole(DAO_ROLE, msg.sender)
+        );
         topUpExpires = block.timestamp + 12 weeks;
     }
 
@@ -239,7 +255,10 @@ contract DappsManager is AccessControl {
         require(msg.value >= topUpMin, "Error: minmum price uncovered");
         require(block.timestamp <= topUpExpires, "Top-up window expired");
         if (fanExists(msg.sender)) {
-            _mint(msg.sender, fansIndex[msg.sender].multiplier * msg.value * 1000);
+            _mint(
+                msg.sender,
+                fansIndex[msg.sender].multiplier * msg.value * 1000
+            );
         } else {
             _mint(msg.sender, msg.value * 1000);
         }
@@ -252,8 +271,10 @@ contract DappsManager is AccessControl {
         } else {
             fans.push(to);
             drnk.mint(to, amount);
-            // welcome bonus
-            fansIndex[to] = Fan(bonus, block.timestamp + 4 weeks);
+            // multiplier starts at 1; the welcome bonus is NOT the multiplier.
+            // (bug: Fan(bonus, ...) made buyDRNK mint multiplier*value*1000 =
+            //  bonus*value*1000 -> astronomical emissions on the 2nd buy)
+            fansIndex[to] = Fan(1, block.timestamp + 4 weeks);
         }
     }
 
@@ -291,7 +312,10 @@ contract DappsManager is AccessControl {
 
     function approveDapp(bytes32 _name) external {
         require(DappNameExists(_name));
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(DAO_ROLE, msg.sender));
+        require(
+            hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
+                hasRole(DAO_ROLE, msg.sender)
+        );
         dappsIndex[_name].status = Status.Active;
 
         emit DappApproved(_name);
@@ -299,7 +323,10 @@ contract DappsManager is AccessControl {
 
     function banDapp(bytes32 _name) external {
         require(DappNameExists(_name));
-        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(DAO_ROLE, msg.sender));
+        require(
+            hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
+                hasRole(DAO_ROLE, msg.sender)
+        );
         dappsIndex[_name].status = Status.Banned;
 
         emit DappBanned(_name);
@@ -324,12 +351,16 @@ contract DappsManager is AccessControl {
 
     // @notice: index should be compute externally using getAllDapps
     function removeDapp(uint256 index, bytes32 name) public {
-        require(index >= 0 && index < dapps.length, "index is out of dapps bounds");
+        require(
+            index >= 0 && index < dapps.length,
+            "index is out of dapps bounds"
+        );
         require(dapps[index] == name, "index do not match with dapp name");
         require(DappNameExists(name));
         require(
-            msg.sender == dappsIndex[name].owner || hasRole(DEFAULT_ADMIN_ROLE, msg.sender)
-                || hasRole(DAO_ROLE, msg.sender)
+            msg.sender == dappsIndex[name].owner ||
+                hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
+                hasRole(DAO_ROLE, msg.sender)
         );
         dapps[index] = dapps[dapps.length - 1];
         dapps.pop();
@@ -339,11 +370,18 @@ contract DappsManager is AccessControl {
     }
 
     function removeFan(uint256 index, address fan) public {
-        require(index >= 0 && index < dapps.length, "index is out of fans bounds");
+        require(
+            index >= 0 && index < dapps.length,
+            "index is out of fans bounds"
+        );
         require(fans[index] == fan, "index do not match with fan");
         require(fanExists(fan));
         require(!fanIsAlive(fan)); //fan is not alive
-        require(msg.sender == fan || hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(DAO_ROLE, msg.sender));
+        require(
+            msg.sender == fan ||
+                hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
+                hasRole(DAO_ROLE, msg.sender)
+        );
         fans[index] = fans[fans.length - 1];
         fans.pop();
         delete fansIndex[fan];
@@ -365,17 +403,23 @@ contract DappsManager is AccessControl {
     function DappNameExists(bytes32 _dapp) public view returns (bool) {
         Dapp storage dp = dappsIndex[_dapp];
         return (
-            !(
-                bytes(dp.cid).length == 0 && dp.rate == 0 && dp.weight_votes_sum == 0 && dp.weight_total_sum == 0
-                    && dp.balance == 0 && dp.burned == 0 && dp.owner == address(0x0)
-            )
+            !(bytes(dp.cid).length == 0 &&
+                dp.rate == 0 &&
+                dp.weight_votes_sum == 0 &&
+                dp.weight_total_sum == 0 &&
+                dp.balance == 0 &&
+                dp.burned == 0 &&
+                dp.owner == address(0x0))
         );
     }
 
     function voteDapp(bytes32 _name, uint256 _amount, uint256 _rate) external {
         require(DappNameExists(_name), "Dapp does not exist");
         require(drnk.balanceOf(msg.sender) > 0, "Insufficient DRNK balance");
-        require(drnk.allowance(msg.sender, address(this)) >= _amount, "Allowance not approved");
+        require(
+            drnk.allowance(msg.sender, address(this)) >= _amount,
+            "Allowance not approved"
+        );
         require(_rate > 0 && _rate <= 100, "Rate must be between 1 and 100");
         Fan memory voter = fansIndex[msg.sender];
         require(voter.expires > block.timestamp, "Voter is not a valid Fan");
@@ -400,7 +444,14 @@ contract DappsManager is AccessControl {
         dapp.weight_total_sum += vote.fan_weight;
         dapp.rate = dapp.weight_votes_sum / dapp.weight_total_sum;
 
-        emit VoteCast(_name, msg.sender, _rate, vote.fan_weight, block.timestamp, _amount);
+        emit VoteCast(
+            _name,
+            msg.sender,
+            _rate,
+            vote.fan_weight,
+            block.timestamp,
+            _amount
+        );
 
         // Distribution
         //drnk.transferFrom(msg.sender, address(this), (_amount * DAOFee)); //charged on cashout
@@ -408,7 +459,10 @@ contract DappsManager is AccessControl {
         drnk.approve(address(this), ((_amount * burnFee) / 10_000));
         drnk.burn((_amount * burnFee) / 10_000);
         dapp.burned += ((_amount * burnFee) / 10_000);
-        dapp.balance += _amount - ((_amount * burnFee) / 10_000) - ((_amount * DAOFee) / 10_000);
+        dapp.balance +=
+            _amount -
+            ((_amount * burnFee) / 10_000) -
+            ((_amount * DAOFee) / 10_000);
 
         emit TokensBurned(_name, (_amount * burnFee) / 10_000);
     }
@@ -441,7 +495,9 @@ contract DappsManager is AccessControl {
     //    return dappsIndex[_dapp];
     //}
 
-    function getDappInfo(bytes32 _dapp)
+    function getDappInfo(
+        bytes32 _dapp
+    )
         public
         view
         returns (
@@ -469,7 +525,9 @@ contract DappsManager is AccessControl {
         );
     }
 
-    function _mapDappStatusToBytes32(Status status) internal pure returns (bytes32) {
+    function _mapDappStatusToBytes32(
+        Status status
+    ) internal pure returns (bytes32) {
         if (status == Status.Submitted) {
             return bytes32("Submitted");
         } else if (status == Status.Active) {
