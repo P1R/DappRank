@@ -19,6 +19,15 @@ VITE_SUBGRAPH_URL="https://api.studio.thegraph.com/query/1760241/dapprank/v0.0.2
 # Format: https://api.studio.thegraph.com/query/<SLUG>/<VERSION>
 VITE_SUBGRAPH_URL="https://api.studio.thegraph.com/query/1760241/dapprank/v0.0.2"
 
+# ENSv2 (Sepolia) — resolución de nombres <dapp>.dapprank.eth
+# UpgradableUniversalResolverProxy (entry point canónico, resuelve v1+v2)
+VITE_ENSV2_RESOLVER="0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe"
+# Dominio raíz de DappRank en ENSv2
+VITE_DAPPRANK_ENS_DOMAIN="dapprank.eth"
+# Setup on-chain del namespace (script/EnsSetup.s.sol):
+#   "label:owner:cid,label:owner:cid,..." — owner/cid vacíos usan defaults
+#ENS_DAPPS="desci::bafybeidt6pwzf2n3q7gab6axfyh2bqhkobawtdbnrpgasfex4geqahcjsa,search::bafybeigep2fh4zdiat363qutigtlhcggwtojrdo7m24jljnmkb7nke6phq"
+
 #m Anvil Accounts
 ACC0="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 ACC1="0x70997970C51812dc3A010C7d01b50e0d17dc79C8"

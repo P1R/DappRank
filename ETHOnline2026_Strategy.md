@@ -640,104 +640,104 @@ The Continuity Track allows participants to **extend an existing open-source pro
 | ENS              | LOW-MEDIUM  | 1             | Low        | $500        | ~$500/day   | 5                |
 | Bazantic         | LOW-MEDIUM  | 1             | Low        | $500        | ~$500/day   | 6                |
 
-> **Key Insight**: The Graph + Arc + Chainlink remains the optimal combination. They have the highest fit scores (10, 9, 8), best $/day ratios, and tell a coherent narrative. The main risk is Arc's mainnet requirement and EVM differences.
+> **Key Insight (revisado 2026-09-13):** The Graph + Uniswap + ENS es la nueva combinación óptima por tiempo. The Graph ya está completo; Uniswap aporta utilidad real al token con el mejor ratio $/día restante; ENS es la integración de menor esfuerzo con valor UX directo. Arc se descarta por los cambios USDC en el contrato + deploy en Arc testnet/mainnet; Chainlink se descarta en favor de ENS (mismo premio, menos esfuerzo, valor UX directo).
 
 ---
 
 ## 6. Optimal Prize Strategy
 
-### Recommended Combination: The Graph + Arc + Chainlink
+### Recommended Combination: The Graph + Uniswap + ENS
 
-| #   | Sponsor          | Track(s)                                              | 1st Place  | Effort      | Strategic Value                        |
-| --- | ---------------- | ----------------------------------------------------- | ---------- | ----------- | -------------------------------------- |
-| 1   | **Arc (Circle)** | Best DeFi/Agentic App (Cont.) + Launch on Arc (Cont.) | **$3,166** | Medium      | Highest payout, stablecoin integration |
-| 2   | **The Graph**    | Best AI Tooling/AI Use Case (Cont.)                   | **$2,500** | Medium-High | Core investor tracking infrastructure  |
-| 3   | **Chainlink**    | Best Chainlink-Powered Upgrade (Cont.)                | **$500**   | Low         | USD pricing, high perceived value      |
-|     | **TOTAL**        |                                                       | **$6,166** |             |                                        |
+> **Revisado 2026-09-13:** cambio de estrategia por tiempo. Se descartan Arc (requiere
+> modificar el contrato para USDC + deploy en Arc testnet + mainnet-ready antes del
+> Sept 30) y Chainlink (mismo premio que ENS con más esfuerzo). The Graph ya está
+> implementado y desplegado.
+
+| #   | Sponsor       | Track(s)                                | 1st Place  | Effort      | Strategic Value                      |
+| --- | ------------- | --------------------------------------- | ---------- | ----------- | ------------------------------------ |
+| 1   | **The Graph** | Best AI Tooling/AI Use Case (Cont.)     | **$2,500** | Medium-High | Core investor tracking (YA COMPLETO) |
+| 2   | **Uniswap**   | Best Uniswap Stack Contribution (Cont.) | **$1,000** | Medium      | Liquidez DRNK + swap in-app          |
+| 3   | **ENS**       | Best Integration of ENSv2 (Cont.)       | **$500**   | Low         | Nombres legibles para dApps          |
+|     | **TOTAL**     |                                         | **$4,000** |             |                                      |
 
 ### Why This Combination?
 
-#### 1. The Graph ($2,500) — The Heart of Continuous Tracking
+#### 1. The Graph ($2,500) — The Heart of Continuous Tracking (COMPLETO)
 
 - **Subgraph** indexes all DappRank events (votes, registrations, burns, cashouts) in real-time
 - **AI Agent** via Subgraph MCP enables natural-language investor queries
 - **SKILLs** make the analysis reusable for other developers
 - Perfect alignment with "investor continuous tracking" goal
 - The Graph is already on Ethereum = zero migration friction
+- **Estado: implementado y desplegado** (subgraph v0.0.2 en Subgraph Studio) — solo falta el demo video
 
-#### 2. Arc / Circle ($3,166) — Stablecoin DeFi Layer
+#### 2. Uniswap ($1,000) — Token Utility & Liquidity
 
-- **USDC listing fees** instead of ETH (price stability for investors)
-- **Treasury dashboard** in USDC for transparency
-- **Arc testnet + mainnet deployment** as additional settlement layer
-- **Agent Stack** for autonomous agent payments
-- Highest individual prize ($3,166) — maximizes ROI
-- Arc is EVM-compatible = natural migration path
+- **DRNK liquidity pool** on Uniswap gives the token real market value
+- **In-app swap** via Uniswap SDK lets users buy/sell DRNK without leaving DappRank
+- Completes the tokenomics loop: earn DRNK by voting → swap it on Uniswap
+- Highest remaining $/day ratio among the feasible options
+- Requires public repo + `FEEDBACK.md` + Uniswap feedback form
 
-#### 3. Chainlink ($500) — Financial Polish
+#### 3. ENS ($500) — Human-Readable dApp Names
 
-- **Price Feeds** show USD value of DRNK, dApp balances, and burned tokens
-- **CRE Confidential Workflows** (optional) for private investor strategies
-- Very low effort, high perceived value for judges
-- Completes the financial narrative
+- Replace opaque `bytes32` dApp identifiers with **ENSv2 names on Sepolia** (same testnet as DappRank)
+- **Permissioned Registry** for subname management (e.g., `dappname.dapprank.eth`)
+- Direct UX improvement: readable names in ranking, votes, and agent queries
+- Lowest effort of all options (1 day) with visible value for judges
 
 ### Why NOT Other Combinations?
 
-| Rejected Combo             | Total  | Why Not?                                                                                                                                  |
-| -------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| The Graph + Arc + World    | $6,832 | World requires AgentKit + feedback docs + Sandbox testing. High effort for $1,166, and human verification isn't core to investor tracking |
-| The Graph + Arc + 1inch    | $7,166 | 1inch Aqua is about self-custodial DEX pools — completely unrelated to dApp ranking. Judges would see forced integration                  |
-| The Graph + Arc + Bazantic | $6,166 | Same total as Chainlink combo, but Bazantic max is $500 (same as Chainlink). Chainlink adds more narrative value (oracles + USD)          |
-| The Graph + Arc + Uniswap  | $6,666 | Uniswap integration (DRNK liquidity pool) is tangential. Would dilute the focus on investor tracking                                      |
-| The Graph + Arc + Ledger   | $6,666 | Hardware security for DAO is nice but not investor-facing. Doesn't advance the "continuous tracking" narrative                            |
+| Rejected Combo                  | Total  | Why Not?                                                                                                                                                              |
+| ------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The Graph + Arc + Chainlink     | $6,166 | Arc exige modificar el contrato para USDC + deploy en Arc testnet + mainnet-ready antes del Sept 30. Demasiado tiempo/riesgo para los días restantes                  |
+| The Graph + Uniswap + Chainlink | $4,000 | Mismo total que con ENS, pero ENS es menos esfuerzo (1 día) y mejora la UX directamente (nombres legibles). Chainlink requiere contrato nuevo + deploy + state change |
+| The Graph + Arc + Uniswap       | $6,666 | Arc sigue siendo el bloqueante de tiempo (USDC + testnet + mainnet)                                                                                                   |
+| The Graph + Arc + ENS           | $4,000 | Mismo total, pero Uniswap aporta utilidad real al token (liquidez/swap) que ENS no cubre                                                                              |
+| The Graph + Arc + World         | $6,832 | World requiere AgentKit + feedback docs + Sandbox testing. Alto esfuerzo y la verificación humana no es core al tracking                                              |
 
 ### Architecture Diagram
 
 ```mermaid
 graph TB
     subgraph "Preexisting — DappRank Core"
-        SC[Smart Contracts<br/>DappsManager.sol + DRNK.sol<br/>Sepolia: 0xD60DC...48957]
+        SC[Smart Contracts<br/>DappsManager.sol + DRNK.sol<br/>Sepolia: 0x6b0EB...48957]
         FE[Frontend Svelte 5<br/>Wallet, Voting, Token Buy]
-        IPFS[IPFS via Helia]
     end
 
-    subgraph "New — The Graph ($2,500)"
+    subgraph "New — The Graph ($2,500) — COMPLETO"
         SUBG[Subgraph<br/>Indexes: votes, ratings,<br/>burns, cashouts, registrations]
         AI_AGENT[AI Agent<br/>Natural language queries<br/>for investors]
         SKILLS[SKILLs<br/>track_dapp, alert,<br/>compare, report]
     end
 
-    subgraph "New — Arc/Circle ($3,166)"
-        USDC[USDC Listing Fees]
-        TREASURY[Treasury Dashboard<br/>in USDC]
-        ARC_DEPLOY[Arc Testnet + Mainnet]
-        AGENT_STACK[Circle Agent Stack<br/>for autonomous payments]
+    subgraph "New — Uniswap ($1,000)"
+        POOL[DRNK Liquidity Pool<br/>Uniswap v3]
+        SWAP[Swap DRNK<br/>Uniswap SDK/API]
     end
 
-    subgraph "New — Chainlink ($500)"
-        PRICE[Price Feeds<br/>DRNK/USD, Balance/USD]
-        CRE[CRE Confidential<br/>Private strategies]
+    subgraph "New — ENS ($500)"
+        ENSV2[ENSv2 on Sepolia<br/>Human-readable dApp names]
+        SUBNAMES[Subnames via<br/>Permissioned Registry]
     end
 
     SC -->|Events| SUBG
     SUBG -->|GraphQL| AI_AGENT
-    SUBG -->|Streaming| FE
+    SUBG -->|Ranking| FE
     AI_AGENT -->|Alerts/Reports| FE
-    USDC -->|Stable payments| SC
-    TREASURY -->|Dashboard| FE
-    ARC_DEPLOY -->|Additional L1| SC
-    PRICE -->|USD values| FE
-    PRICE -->|USD values| AI_AGENT
-    CRE -->|Private compute| AI_AGENT
+    POOL -->|Liquidity| SC
+    SWAP -->|Buy/Sell DRNK| FE
+    ENSV2 -->|Resolve names| FE
+    ENSV2 -->|bytes32 → name| SC
 ```
 
 ### Narrative for Judges
 
-> **"DappRank is a decentralized dApp ranking platform using Square Root Weighted Voting. For ETHOnline 2026, we transformed it into a complete investor intelligence platform:"
+> **"DappRank is a decentralized dApp ranking platform using Square Root Weighted Voting. For ETHOnline 2026, we transformed it into a complete investor intelligence platform:"**
 >
 > 1. **The Graph Subgraph** indexes all on-chain activity in real-time, powering an **AI Agent** that investors query in natural language
-> 2. **Arc/Circle** adds stablecoin (USDC) infrastructure — stable listing fees, treasury transparency, and a second L1 deployment
-> 3. **Chainlink Price Feeds** bring USD valuation to every metric, making the platform financially meaningful**
+> 2. **Uniswap** gives DRNK real market utility — a liquidity pool and in-app swaps complete the tokenomics loop (vote → earn DRNK → swap)
+> 3. **ENSv2** replaces opaque bytes32 identifiers with human-readable dApp names on Sepolia, improving UX across ranking, votes, and agent queries**
 
 ---
 
@@ -745,37 +745,36 @@ graph TB
 
 ### Key Technical Decisions Based on Documentation Research
 
-#### The Graph: Subgraph + AI Agent (Not Substreams)
+> **Revisado 2026-09-13:** se eliminan Arc y Chainlink por tiempo. Nueva combinación: The Graph (completo) + Uniswap + ENS.
+
+#### The Graph: Subgraph + AI Agent (Not Substreams) — COMPLETO
 
 - **Decision**: Build a standard Subgraph + Subgraph MCP, NOT Substreams
 - **Rationale**: Substreams requires Rust modules and protobuf schemas — significantly more complex. The Subgraph MCP already provides natural-language querying capabilities. The Continuity AI track ($2,500) does NOT require composition of multiple Graph products.
-- **Critical blocker**: `DappsManager.sol` does NOT emit events for votes. Must add `event VoteCast(...)` to the contract and redeploy on Sepolia.
+- **Status**: Eventos desplegados en Sepolia, subgraph v0.0.2 en Subgraph Studio, skill de agente creado. Pendiente: demo video.
 
-#### Arc: Deploy + App Kit (Not Full Agent Stack)
+#### Uniswap: DRNK Pool + SDK Swap (Not v4 Hooks)
 
-- **Decision**: Deploy on Arc Testnet + integrate Circle App Kit for USDC flows. Skip full Agent Stack unless time permits.
-- **Rationale**: Arc is EVM-compatible with differences (USDC as gas token). The Agent Stack starter kits are well-documented but add complexity. The core prize requirements are met with deployment + USDC integration.
-- **Critical blocker**: `DappsManager.sol` uses `msg.value` for ETH payments. Must modify to accept USDC on Arc.
+- **Decision**: Create a DRNK liquidity pool on Uniswap v3 and integrate swaps via the Uniswap SDK/API. Skip v4 hooks (custom pool logic) unless time permits.
+- **Rationale**: The prize requires "building on/integrating the Uniswap stack" — a pool + SDK swap satisfies this with the least complexity. v4 hooks would add custom logic but also significant testing overhead.
+- **Requirements**: Public GitHub repo + `FEEDBACK.md` + Uniswap feedback form.
+- **Approach**: Deploy DRNK/WETH (or DRNK/USDC) pool on Sepolia, add a "Swap DRNK" action in the frontend using the Uniswap SDK.
 
-#### Chainlink: Price Feeds with State Change (Not CRE)
+#### ENS: ENSv2 Name Resolution (Not Full Registry Migration)
 
-- **Decision**: Integrate Price Feeds into a smart contract that modifies state. Skip CRE Confidential Workflows (private beta, requires enrollment).
-- **Rationale**: The Continuity prize requires the integration to cause a blockchain state change. A simple frontend display won't qualify. CRE is private beta — may not be accessible.
-- **Approach**: Create a contract that uses Price Feed data to calculate dynamic fees in USD terms.
+- **Decision**: Integrate ENSv2 on Sepolia to resolve/display dApp names as human-readable ENS names. Do NOT migrate the contract's `bytes32` storage to ENS.
+- **Rationale**: The prize requires "integration uses ENSv2 on Sepolia" targeting the existing testnet deployment. A resolver layer (contract or frontend) that maps `bytes32` → ENS name satisfies this without a risky storage migration.
+- **Approach**: Register subnames under a DappRank ENSv2 domain (e.g., `dapprank.eth`), resolve them in the frontend and in the AI agent queries.
 
 ---
 
-### Timeline (7 Days — Deadline: Sept 13)
+### Timeline (Revised — The Graph done, 2-3 days remaining)
 
-| Day       | Focus                         | Sponsor   | Deliverables                                                                                                    |
-| --------- | ----------------------------- | --------- | --------------------------------------------------------------------------------------------------------------- |
-| **Day 1** | Contract Prep + Subgraph Init | The Graph | Add events to DappsManager.sol, redeploy on Sepolia. Init subgraph project with `graph init`                    |
-| **Day 2** | Subgraph Development          | The Graph | Write schema.graphql, AssemblyScript mappings. Deploy to Subgraph Studio                                        |
-| **Day 3** | AI Agent (Subgraph MCP)       | The Graph | Install Subgraph MCP server. Build natural-language query agent. Test with Claude/Cursor                        |
-| **Day 4** | Arc Deployment                | Arc       | Deploy modified DappsManager on Arc Testnet. Verify on Arcscan. Configure USDC fee acceptance                   |
-| **Day 5** | Arc App Kit + Treasury        | Arc       | Integrate Circle App Kit for USDC flows. Build Treasury Dashboard component in Svelte                           |
-| **Day 6** | Chainlink Price Feeds         | Chainlink | Create consumer contract using AggregatorV3Interface. Integrate USD pricing into frontend. Ensure state change  |
-| **Day 7** | Polish + Submission           | All       | Git history cleanup. README with pre-existing/new split. Record 2-4 min demo video. Submit via Hacker Dashboard |
+| Day       | Focus               | Sponsor | Deliverables                                                                                    |
+| --------- | ------------------- | ------- | ----------------------------------------------------------------------------------------------- |
+| **Day 1** | Uniswap Pool + SDK  | Uniswap | Deploy DRNK pool on Sepolia (v3). Integrate Uniswap SDK swap in frontend. Write `FEEDBACK.md`   |
+| **Day 2** | ENSv2 Integration   | ENS     | Register DappRank ENSv2 domain + subnames on Sepolia. Resolve names in frontend + agent queries |
+| **Day 3** | Polish + Submission | All     | README with pre-existing/new split (Graph, Uniswap, ENS). Record 2-4 min demo video. Submit     |
 
 ---
 
@@ -905,103 +904,75 @@ Create reusable SKILLs following the Subgraphs SKILLs format:
 
 ---
 
-#### Arc/Circle: Deployment + App Kit
+#### Uniswap: DRNK Pool + SDK Swap
 
-**Step 1: Deploy on Arc Testnet**
+**Step 1: Deploy DRNK Liquidity Pool (Sepolia)**
 
-Arc is EVM-compatible with key differences:
+- Use Uniswap v3 on Sepolia (deployed addresses via the Uniswap Deployments repo).
+- Pool: DRNK/WETH (or DRNK/USDC if a USDC faucet is available on Sepolia).
+- Provide initial liquidity via the `NonfungiblePositionManager` (mint position) or a simpler v2-style pool if v3 tooling is too heavy.
 
-- **USDC is gas token** — `msg.value` patterns won't work for ETH. Need to modify `buyDRNK()` and `registerDapp()` to accept USDC.
-- **18 decimal USDC** — USDC uses 18 decimals natively on Arc (not 6 on other chains).
-- **Sub-second finality** — No need for `confirmations` or `wait()` patterns.
-
-Modified fee approach for Arc:
-
-```solidity
-// Instead of: require(msg.value >= listingFee, "...");
-// Use: USDC.transferFrom(msg.sender, address(this), listingFee);
-```
-
-**Step 2: Install App Kit**
+**Step 2: Frontend Swap (Uniswap SDK)**
 
 ```bash
-npm install @circle-fin/app-kit @circle-fin/adapter-viem-v2 viem
+npm install @uniswap/sdk-core @uniswap/v3-sdk
 ```
 
-**Step 3: Treasury Dashboard (Svelte Component)**
+- Add a "Swap DRNK" action in `GetDRNK.svelte` / `DappRankList.svelte`:
+  - Fetch quotes via the Uniswap API (`https://api.uniswap.org/v1/quote`)
+  - Execute the swap with the user's wallet (router contract on Sepolia)
+- Show DRNK price in the UI (from the pool's current `sqrtPriceX96`)
 
-Create `src/components/TreasuryDashboard.svelte`:
+**Step 3: FEEDBACK.md (requisito del premio)**
 
-- Connect to Arc via App Kit
-- Display USDC balances (listing fees collected, DAO treasury)
-- Show transaction history
-- Use Unified Balance for cross-chain USDC view
+- Create `FEEDBACK.md` documenting the Uniswap integration experience
+- Submit the Uniswap feedback form (link in the Uniswap track page)
 
 ---
 
-#### Chainlink: Price Feeds with State Change
+#### ENS: ENSv2 Name Resolution
 
-**Step 1: Create Consumer Contract**
+> **Estado 2026-09-13:** pasos 2 y 3 implementados. Pendiente del equipo: registrar
+> `dapprank.eth` en ENSv2 (Sepolia) y ejecutar `script/EnsSetup.s.sol`.
 
-```solidity
-// SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.30;
+**Step 1: Register DappRank domain + subnames (Sepolia) — PENDIENTE (equipo)**
 
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+- ENSv2 is deployed on Sepolia. Register a domain (e.g., `dapprank.eth`) and subnames per dApp (`<dappname>.dapprank.eth`).
+- Use the ENSv2 Permissioned Registry for subname management (role-based, replaces Name Wrapper fuses).
+- **Script listo**: `script/EnsSetup.s.sol` despliega el subregistry (UserRegistry vía VerifiableFactory), lo conecta al nombre y registra subnames con sus PermissionedResolvers (records `dapprank.cid` + `addr` precargados). Alternativa: `ens-cli`.
 
-contract DappRankPriceConsumer {
-    AggregatorV3Interface internal priceFeed;
+**Step 2: Resolve names in the frontend — IMPLEMENTADO**
 
-    // Store USD-equivalent values on-chain (state change requirement)
-    mapping(bytes32 => uint256) public dappUsdBalance;
+- `src/lib/ens.svelte.js`: `namehash`, `dnsEncode`, `dappEnsName`, `resolveTextRecord`, `resolveAddr`, `attachEnsNames` — resuelve vía `UpgradableUniversalResolverProxy` (`0xeEeE…EeEe`) con fallback a RPC público de Sepolia.
+- `src/components/DappRankList.svelte` muestra el nombre ENS con badge "ENSv2" y fallback al `bytes32`.
+- `src/lib/ethers.svelte.js`: `refreshDappsList()` enriquece la lista (no bloquea).
 
-    constructor(address priceFeedAddress) {
-        priceFeed = AggregatorV3Interface(priceFeedAddress);
-    }
+**Step 3: Agent queries — IMPLEMENTADO**
 
-    function updateDappUsdBalance(bytes32 dappName, uint256 tokenBalance) external {
-        (, int256 price,,,) = priceFeed.latestRoundData();
-        dappUsdBalance[dappName] = tokenBalance * uint256(price) / 1e18;
-    }
-
-    function getDappUsdBalance(bytes32 dappName) external view returns (uint256) {
-        return dappUsdBalance[dappName];
-    }
-}
-```
-
-**Step 2: Frontend Display**
-
-Add USD values to `DappRankList.svelte`:
-
-- Show USD equivalent of dApp balances
-- Show USD value of burned tokens
-- Show listing fee in USD
+- `skills/dapprank-subgraph/SKILL.md` referencias dApps por nombre ENS (`<label>.dapprank.eth`).
 
 ---
 
 ### Risk Mitigation
 
-| Risk                                   | Probability | Impact | Mitigation                                                                                    |
-| -------------------------------------- | ----------- | ------ | --------------------------------------------------------------------------------------------- |
-| Arc mainnet not available by Sept 30   | Medium      | High   | Focus on testnet deployment + documentation. Prize requires "deployment-ready" not "deployed" |
-| Contract redeployment on Sepolia fails | Low         | High   | Test with local anvil first. Keep existing contract address as fallback                       |
-| CRE private beta not accessible        | High        | Low    | Skip CRE, use Price Feeds only. Still qualifies for $500 prize                                |
-| Subgraph indexing takes too long       | Low         | Medium | Use `startBlock` parameter to index from recent block. Test with small data first             |
-| Time running out                       | Medium      | High   | Prioritize: Subgraph > Arc Deployment > Chainlink. Drop features if needed                    |
+| Risk                                     | Probability | Impact | Mitigation                                                                                   |
+| ---------------------------------------- | ----------- | ------ | -------------------------------------------------------------------------------------------- |
+| Uniswap pool deployment fails on Sepolia | Medium      | Medium | Use a v2-style pool or provide liquidity via the position manager. Test on local anvil first |
+| ENSv2 subname registration friction      | Low         | Low    | Register only the main domain + a few demo subnames. Fallback: resolve names off-chain       |
+| Subgraph indexing takes too long         | Low         | Medium | Use `startBlock` parameter to index from recent block. Test with small data first            |
+| Time running out                         | Medium      | High   | Prioritize: The Graph (done) > Uniswap pool+swap > ENS resolution. Drop swap UI if needed    |
 
 ---
 
 ### Fallback Plan (If Time is Limited)
 
-If only 4-5 days are available instead of 7:
+If only 1-2 days are available:
 
-| Priority | Sponsor   | Minimum Viable Deliverable                             | Time     |
-| -------- | --------- | ------------------------------------------------------ | -------- |
-| **P0**   | The Graph | Subgraph deployed + basic AI Agent with MCP            | 2 days   |
-| **P1**   | Arc       | Contract deployed on Arc Testnet + USDC fee acceptance | 1.5 days |
-| **P2**   | Chainlink | Price Feed consumer contract + frontend USD display    | 1 day    |
-| **P3**   | Arc       | Treasury Dashboard (nice-to-have)                      | 0.5 day  |
+| Priority | Sponsor   | Minimum Viable Deliverable                             | Time    |
+| -------- | --------- | ------------------------------------------------------ | ------- |
+| **P0**   | The Graph | Subgraph deployed + AI Agent (COMPLETO) — solo video   | 0.5 day |
+| **P1**   | Uniswap   | DRNK pool deployed + FEEDBACK.md (swap UI opcional)    | 1 day   |
+| **P2**   | ENS       | Domain + subnames registrados + resolución en frontend | 0.5 day |
 
 This still qualifies for all 3 prizes with a coherent submission.
 
@@ -1012,7 +983,7 @@ This still qualifies for all 3 prizes with a coherent submission.
 ### Hacker Dashboard Submission
 
 1. **Project Title:** DappRank — Decentralized dApp Ranking & Investor Intelligence
-2. **Description:** A decentralized ranking system for dApps using Square Root Weighted Voting (SRWV), enhanced with real-time data indexing, AI-powered investor analytics, stablecoin infrastructure, and USD pricing.
+2. **Description:** A decentralized ranking system for dApps using Square Root Weighted Voting (SRWV), enhanced with real-time data indexing, AI-powered investor analytics, DRNK liquidity on Uniswap, and human-readable dApp names via ENSv2.
 3. **GitHub Repository:** Link to public repo
 4. **Demo Video:** 2-4 minutes, 720p minimum
 
@@ -1037,16 +1008,16 @@ This still qualifies for all 3 prizes with a coherent submission.
 - AI Agent using Subgraph MCP for natural language investor queries
 - SKILLs for reusable DappRank analysis
 
-### Arc/Circle Integration
+### Uniswap Integration
 
-- USDC listing fees for dApp registration
-- Treasury dashboard in USDC
-- Deployed on Arc testnet (mainnet-ready by Sept 30)
+- DRNK liquidity pool on Uniswap (Sepolia)
+- In-app swap via Uniswap SDK/API
+- FEEDBACK.md documenting the integration
 
-### Chainlink Integration
+### ENS Integration
 
-- Price Feeds for USD valuation of DRNK and dApp balances
-- Optional: CRE Confidential Workflows for private strategies
+- ENSv2 domain + subnames for dApp names (Sepolia)
+- Human-readable names in ranking, votes, and agent queries
 ```
 
 ### Demo Video Script (2-4 minutes)
@@ -1054,8 +1025,8 @@ This still qualifies for all 3 prizes with a coherent submission.
 1. **0:00-0:30** — Intro: What is DappRank? SRWV voting, existing deployment
 2. **0:30-1:30** — The Graph Subgraph: Show real-time data indexing, query examples
 3. **1:30-2:30** — AI Agent: Natural language queries, investor insights, alerts
-4. **2:30-3:00** — Arc Integration: USDC fees, treasury dashboard
-5. **3:00-3:30** — Chainlink: USD pricing on all metrics
+4. **2:30-3:00** — Uniswap: DRNK pool, in-app swap, token utility
+5. **3:00-3:30** — ENS: Human-readable dApp names via ENSv2
 6. **3:30-4:00** — Summary: Architecture, WOW factor, future roadmap
 
 ### Partner Prize Selection (Max 3)
@@ -1063,8 +1034,8 @@ This still qualifies for all 3 prizes with a coherent submission.
 In the submission form, select:
 
 1. **The Graph** → Best AI Tooling or AI Use Case with The Graph (Continuity)
-2. **Arc (Circle)** → Best DeFi or Agentic Application (Continuity) + Launch on Arc Testnet & Push to Mainnet (Continuity)
-3. **Chainlink** → Best Chainlink-Powered Upgrade (Continuity)
+2. **Uniswap** → Best Uniswap Stack Contribution (Continuity)
+3. **ENS** → Best Integration of ENSv2 into an Existing Project (Continuity)
 
 ---
 
@@ -1129,6 +1100,9 @@ In the submission form, select:
 | The Graph Subgraph MCP          | https://thegraph.com/docs/en/subgraphs/tooling/subgraph-mcp/introduction/           |
 | The Graph SKILLs                | https://github.com/graphprotocol/subgraphs-skills                                   |
 | Substreams SKILLs               | https://github.com/streamingfast/substreams-skills                                  |
+| Uniswap Docs                    | https://developers.uniswap.org/docs                                                 |
+| Uniswap Deployments (Sepolia)   | https://github.com/Uniswap/deployments-v3                                           |
+| ENSv2 Docs                      | https://docs.ens.domains/ensv2/overview                                             |
 | Arc Docs                        | https://docs.arc.io/                                                                |
 | Circle Agent Stack              | https://github.com/circlefin/agent-stack-starter-kits                               |
 | Chainlink CRE Docs              | https://docs.chain.link/cre                                                         |
@@ -1137,4 +1111,4 @@ In the submission form, select:
 
 ---
 
-> **Note to future readers:** This document contains the complete context needed to understand DappRank's participation in ETHOnline 2026's Continuity Track. The optimal strategy is to pursue **The Graph ($2,500) + Arc/Circle ($3,166) + Chainlink ($500)** for a total potential of **$6,166**, focusing on transforming DappRank into an investor intelligence platform with real-time data indexing, AI-powered analytics, stablecoin infrastructure, and USD pricing.
+> **Note to future readers:** This document contains the complete context needed to understand DappRank's participation in ETHOnline 2026's Continuity Track. The optimal strategy (revisada 2026-09-13 por tiempo) es **The Graph ($2,500) + Uniswap ($1,000) + ENS ($500)** para un total potencial de **$4,000**, enfocada en transformar DappRank en una plataforma de inteligencia para inversores con indexación de datos en tiempo real, analítica con IA, utilidad de token vía Uniswap y nombres legibles vía ENSv2.
