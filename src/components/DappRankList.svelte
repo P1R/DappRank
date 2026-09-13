@@ -68,6 +68,8 @@
                     ? stripNulls(toUtf8String(dapp.name))
                     : "Unknown DApp",
                 rawName: dapp.name,
+                ensName: dapp.ensName || null,
+                ensResolved: dapp.ensResolved || false,
                 url: dapp.cid ? `https://ipfs.io/ipfs/${dapp.cid}` : "#",
                 rating,
                 tier: ratingTier(rating),
@@ -161,8 +163,14 @@
                 </div>
 
                 <h2 class="mt-2 text-lg font-semibold text-neon-cyan">
-                    {item.name}
+                    {item.ensResolved ? item.ensName : item.name}
                 </h2>
+                {#if item.ensResolved}
+                    <span
+                        class="mt-1 inline-flex items-center gap-1 rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-neon-cyan"
+                        title="Resolved via ENSv2 (Sepolia)">ENSv2</span
+                    >
+                {/if}
                 <a
                     href={item.url}
                     class="block break-all text-xs opacity-60"
@@ -305,7 +313,14 @@
                         </td>
                         <td class="px-3 py-3">
                             <div class="font-medium text-neon-cyan">
-                                {item.name}
+                                {item.ensResolved ? item.ensName : item.name}
+                                {#if item.ensResolved}
+                                    <span
+                                        class="ml-1.5 inline-flex items-center gap-1 rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-neon-cyan"
+                                        title="Resolved via ENSv2 (Sepolia)"
+                                        >ENSv2</span
+                                    >
+                                {/if}
                             </div>
                             <div class="break-all text-xs opacity-60">
                                 <a

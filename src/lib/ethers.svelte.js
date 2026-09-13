@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import compiledDappsManager from "../../out/DappsManager.sol/DappsManager.json";
 import compiledTokenContract from "../../out/DRNK.sol/DappRank.json";
 import { fetchDappsFromSubgraph } from "./subgraph.svelte.js";
+import { attachEnsNames } from "./ens.svelte.js";
 
 // The DappsManager contract is already deployed on Sepolia testnet.
 // Fall back to the deployed address when no VITE_SMARTCONTRACTADDRS is provided (e.g. no .env).
@@ -14,6 +15,7 @@ const tokenContractABI = compiledTokenContract.abi;
 /**
  * @typedef {Object} DappInfo
  * @property {string} name
+ * @property {string} [nameStr]
  * @property {string} cid
  * @property {string} rate
  * @property {string} weight_votes_sum
@@ -22,6 +24,9 @@ const tokenContractABI = compiledTokenContract.abi;
  * @property {string} burned
  * @property {string} owner
  * @property {string} status
+ * @property {string} [ensName] Nombre ENSv2 (<label>.dapprank.eth)
+ * @property {boolean} [ensResolved] true si el subname resolvió vía ENSv2
+ * @property {string | null} [ensCid] CID IPFS del record dapprank.cid
  */
 
 /**
@@ -183,6 +188,11 @@ export async function refreshDappsList() {
   } finally {
     ethVars.isLoading = false;
   }
+  // ENSv2 enrichment (no bloquea el refresh): resuelve <dapp>.dapprank.eth
+  // vía UniversalResolverV2 y muta los items en su lugar.
+  attachEnsNames(ethVars.dappsList, ethVars.provider).catch((error) =>
+    console.warn("ENSv2 enrichment failed:", error),
+  );
 }
 
 /** @param {string} dappName */

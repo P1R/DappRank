@@ -932,19 +932,24 @@ npm install @uniswap/sdk-core @uniswap/v3-sdk
 
 #### ENS: ENSv2 Name Resolution
 
-**Step 1: Register DappRank domain + subnames (Sepolia)**
+> **Estado 2026-09-13:** pasos 2 y 3 implementados. Pendiente del equipo: registrar
+> `dapprank.eth` en ENSv2 (Sepolia) y ejecutar `script/EnsSetup.s.sol`.
+
+**Step 1: Register DappRank domain + subnames (Sepolia) — PENDIENTE (equipo)**
 
 - ENSv2 is deployed on Sepolia. Register a domain (e.g., `dapprank.eth`) and subnames per dApp (`<dappname>.dapprank.eth`).
 - Use the ENSv2 Permissioned Registry for subname management (role-based, replaces Name Wrapper fuses).
+- **Script listo**: `script/EnsSetup.s.sol` despliega el subregistry (UserRegistry vía VerifiableFactory), lo conecta al nombre y registra subnames con sus PermissionedResolvers (records `dapprank.cid` + `addr` precargados). Alternativa: `ens-cli`.
 
-**Step 2: Resolve names in the frontend**
+**Step 2: Resolve names in the frontend — IMPLEMENTADO**
 
-- Add a resolver helper in `src/lib/` that maps `bytes32` dApp names → ENS subnames.
-- Display the human-readable name in `DappRankList.svelte` cards, votes, and the AI agent responses.
+- `src/lib/ens.svelte.js`: `namehash`, `dnsEncode`, `dappEnsName`, `resolveTextRecord`, `resolveAddr`, `attachEnsNames` — resuelve vía `UpgradableUniversalResolverProxy` (`0xeEeE…EeEe`) con fallback a RPC público de Sepolia.
+- `src/components/DappRankList.svelte` muestra el nombre ENS con badge "ENSv2" y fallback al `bytes32`.
+- `src/lib/ethers.svelte.js`: `refreshDappsList()` enriquece la lista (no bloquea).
 
-**Step 3: Agent queries**
+**Step 3: Agent queries — IMPLEMENTADO**
 
-- Update `skills/dapprank-subgraph/SKILL.md` examples to reference dApps by ENS name.
+- `skills/dapprank-subgraph/SKILL.md` referencias dApps por nombre ENS (`<label>.dapprank.eth`).
 
 ---
 

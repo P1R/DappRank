@@ -288,3 +288,94 @@ El [Subgraph MCP](https://thegraph.com/docs/en/subgraphs/tooling/subgraph-mcp/in
 permite consultar el subgraph en lenguaje natural: rankings, tendencias de
 quema, presión deflacionaria, etc. Configurar con el endpoint del subgraph
 desplegado.
+
+## ENS Integration (ETHOnline 2026)
+
+DappRank integra [ENSv2](https://docs.ens.domains/ensv2/overview) (beta en
+Sepolia) para dar a cada dApp una identidad legible: `<dappname>.dapprank.eth`.
+El contrato guarda nombres `bytes32` opacos; ENSv2 los convierte en nombres
+humanos resolubles on-chain.
+
+### Estado
+
+- [x] Capa de resolución ENSv2 en el frontend (`src/lib/ens.svelte.js`) — `namehash`, `dnsEncode`, `resolveTextRecord`, `resolveAddr`, `attachEnsNames`
+- [x] Ranking muestra nombres ENS con badge "ENSv2" y fallback a `bytes32` (`src/components/DappRankList.svelte`)
+- [x] Script de setup on-chain (`script/EnsSetup.s.sol`) — subregistry + subnames + records
+- [ ] `dapprank.eth` registrado en ENSv2 (Sepolia) — acción del equipo vía [ENS Explorer](https://explorer.ens.domains) (pago en USDC)
+- [ ] Subnames `<dappname>.dapprank.eth` registrados (ejecutar el script o `ens-cli`)
+
+### Cómo funciona
+
+1. **Resolución**: el frontend llama a `UniversalResolverV2`
+   (`0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe`, entry point canónico de
+   ENSv2 en Sepolia) con el nombre DNS-encoded y el selector de `text()`/
+   `addr()`. Si el subname existe, muestra el nombre ENS y el record
+   `dapprank.cid`; si no, cae al `bytes32`.
+2. **On-chain**: `script/EnsSetup.s.sol` despliega un `UserRegistry`
+   (subregistry) para `dapprank.eth` vía `VerifiableFactory`, lo conecta al
+   nombre (`setSubregistry` + `setParent`), y registra un subname por dApp con
+   su `PermissionedResolver` (records `dapprank.cid` y `addr` precargados en
+   `initialize()`).
+
+### Pasos para el equipo (requieren wallet + USDC en Sepolia)
+
+> 📋 Guía paso a paso para el equipo: [`docs/ENS_SETUP_GUIDE.md`](./docs/ENS_SETUP_GUIDE.md)
+
+**Enlaces útiles:**
+
+- [ENS Explorer v2 (registrar dominio, red Sepolia)](https://explorer.ens.dev) — ⚠️ no usar `app.ens.domains` (ese es mainnet/ENSv1)
+- [ENS App v2 (alternativa, red Sepolia)](https://app.ens.dev)
+- [Faucet ETH de Alchemy (Sepolia)](https://sepoliafaucet.com) · [Infura](https://www.infura.io/faucet/sepolia) · [Chainlink](https://faucets.chain.link/sepolia)
+- [Faucet USDC de Circle (Sepolia)](https://faucet.circle.com) — o mint directo del MockUSDC (`0xd3322b29a7bdee707d1684676f149bf41aa3422f`, función `mint`, 6 decimales)
+- [Docs ENSv2](https://docs.ens.domains/ensv2/overview)
+- [Página del premio ENS (ETHOnline 2026)](https://ethglobal.com/events/ethonline2026/prizes/ens)
+
+> ⚠️ **Si `dapprank.eth` ya está registrado en Sepolia por otra cuenta** (es
+> una testnet: cualquiera puede registrar cualquier nombre con USDC de prueba),
+> no importa para el premio — solo usa otro nombre libre. Configúralo en dos
+> lugares y listo:
+>
+> ```bash
+> # script/EnsSetup.s.sol -> se lee de env (default "dapprank")
+> export ENS_DOMAIN="dapprankapp"
+>
+> # frontend -> .env
+> VITE_DAPPRANK_ENS_DOMAIN="dapprankapp.eth"
+> ```
+
+```bash
+# 1. Registrar <dominio>.eth en el ENS Explorer v2 (red Sepolia, pago en USDC)
+#    https://explorer.ens.dev  (NO app.ens.domains — ese es mainnet)
+
+# 2. Ejecutar el setup on-chain (subregistry + subnames + records)
+source .env
+export ENS_DOMAIN="dapprankapp"   # o el nombre libre que registraste
+forge script script/EnsSetup.s.sol:EnsSetupScript \
+  --rpc-url $SEPOLIA_RPC_URL --private-key $PK0 --broadcast
+
+# Alternativa con ens-cli (oficial de ENS):
+#   ens register dapprankapp.eth --chain sepolia
+#   ens subregistry deploy dapprankapp.eth --chain sepolia
+#   ens subregistry set dapprankapp.eth --chain sepolia
+#   ens subname create desci.dapprankapp.eth --chain sepolia
+```
+
+### Verificación
+
+```bash
+# El subname debe resolver el record dapprank.cid
+curl -s -X POST "https://ethereum-sepolia-rpc.publicnode.com" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","method":"eth_call","params":[{"to":"0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe","data":"0x"}],"id":1}'
+# O simplemente abrir la app: el ranking muestra desci.dapprank.eth con badge ENSv2
+```
+
+### Direcciones ENSv2 Sepolia (canonical, 2026-06-29)
+
+| Contrato                         | Dirección                                    |
+| -------------------------------- | -------------------------------------------- |
+| UpgradableUniversalResolverProxy | `0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe` |
+| ETHRegistry                      | `0x67b728a792e789a8978b30cF1b3b641f19354b43` |
+| UserRegistryImpl                 | `0x840Fa461059862Ea466A711E8C98c8dE732061C0` |
+| PermissionedResolverImpl         | `0x7E4B2d59938930168024201752EE5503df402303` |
+| VerifiableFactory                | `0x118Bc31A50d559F7015a8Da26d54B3b030CdB70F` |

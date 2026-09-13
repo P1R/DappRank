@@ -210,3 +210,63 @@ El equipo **aprobó la propuesta** de la sección anterior y **desplegó el cont
 - Pruebas en testnet con la wallet real (comprar, votar, listar dapps).
 - Aprobación del skill y de la sección de submission del README.
 - Grabación del demo video (pendiente).
+
+---
+
+## Integración con ENSv2 — implementación (2026-09-13)
+
+### Contexto
+
+Cambio de estrategia por tiempo (ver `ETHOnline2026_Strategy.md`): la
+combinación de premios pasa a **The Graph + Uniswap + ENS**. **El equipo**
+decidió implementar ENS primero y definió el alcance: capa de resolución
+ENSv2 en el frontend + setup on-chain del namespace `dapprank.eth`, sin migrar
+el storage `bytes32` del contrato.
+
+### Decisiones del equipo (dirigieron esta fase)
+
+- Cambiar la estrategia de premios (Arc/Chainlink → Uniswap/ENS) por tiempo.
+- Implementar ENSv2 como capa de resolución (no migración de storage).
+- Registrar `dapprank.eth` en ENSv2 (Sepolia) con su wallet — **pendiente**.
+- Ejecutar `script/EnsSetup.s.sol` con su clave privada — **pendiente**.
+
+### Implementación de la IA (bajo esa dirección)
+
+**Frontend (resolución ENSv2):**
+
+- **`src/lib/ens.svelte.js`** (nuevo): `namehash`, `dnsEncode`, `dappEnsName`,
+  `resolveTextRecord`, `resolveAddr` y `attachEnsNames`. Resuelve
+  `<dappname>.dapprank.eth` vía `UpgradableUniversalResolverProxy`
+  (`0xeEeE…EeEe`, entry point canónico de ENSv2 en Sepolia) con fallback a RPC
+  público de Sepolia si no hay wallet conectada. Direcciones canónicas
+  verificadas contra `contracts-v2/docs/addresses/sepolia.md`.
+- **`src/lib/ethers.svelte.js`**: `refreshDappsList()` enriquece la lista con
+  nombres ENS (no bloquea el refresh); typedef `DappInfo` ampliado con
+  `ensName`/`ensResolved`/`ensCid`.
+- **`src/components/DappRankList.svelte`**: muestra el nombre ENS con badge
+  "ENSv2" cuando el subname resuelve; fallback al `bytes32`.
+
+**On-chain (setup del namespace):**
+
+- **`script/EnsSetup.s.sol`** (nuevo): despliega un `UserRegistry` (subregistry)
+  para `dapprank.eth` vía `VerifiableFactory` (salt determinista, mismo que
+  `ens-cli`), lo conecta (`ETHRegistry.setSubregistry` + `setParent`), y
+  registra un subname por dApp con su `PermissionedResolver` (records
+  `dapprank.cid` y `addr` precargados en `initialize()`). Interfaces mínimas
+  verificadas contra el repo `ensdomains/contracts-v2`.
+
+**Docs:**
+
+- **`README.md`**: sección "ENS Integration (ETHOnline 2026)" con estado,
+  pasos para el equipo y direcciones canónicas.
+- **`envexample`**: vars `VITE_ENSV2_RESOLVER`, `VITE_DAPPRANK_ENS_DOMAIN`,
+  `ENS_DAPPS`.
+- **`skills/dapprank-subgraph/SKILL.md`**: referencias a nombres ENSv2 en
+  queries y razonamiento.
+
+### Validación
+
+- `forge build` compila (incluye `script/EnsSetup.s.sol`).
+- `bun run build` compila el frontend sin errores.
+- **Pendiente del equipo**: registrar `dapprank.eth` en ENSv2 (Sepolia) y
+  ejecutar el script de setup para que los subnames resuelvan en la UI.
