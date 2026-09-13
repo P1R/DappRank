@@ -25,11 +25,11 @@ import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 // [ ] sacrifice
 
 // ============================================================================
-// PROPUESTA PENDIENTE DE APROBACIÓN — EVENTOS PARA INTEGRACIÓN CON THE GRAPH
+// EVENTOS PARA INTEGRACIÓN CON THE GRAPH — IMPLEMENTADO
 // ============================================================================
-// Estado: PROPUESTA. Este bloque NO cambia el comportamiento del contrato.
-// Si se aprueba: integrar los eventos, añadir tests, redeployar en Sepolia y
-// actualizar las direcciones (envexample, src/lib/ethers.svelte.js, README.md).
+// Estado: IMPLEMENTADO (2026-09-12). Los eventos están declarados y se emiten
+// en las funciones indicadas. Pendiente: redeployar en Sepolia y actualizar
+// las direcciones (envexample, src/lib/ethers.svelte.js, README.md).
 //
 // ----------------------------------------------------------------------------
 // 1) CONTEXTO
@@ -100,7 +100,7 @@ import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 //      retirado fondos?", "¿cuánto ha retirado cada una?".
 //
 // ----------------------------------------------------------------------------
-// 5) DECISIONES / DESVIACIONES RESPECTO A LA ESTRATEGIA (requieren tu OK)
+// 5) DECISIONES / DESVIACIONES RESPECTO A LA ESTRATEGIA (APROBADAS)
 // ----------------------------------------------------------------------------
 // a) TokensBurned se emite en voteDapp(), NO en burn():
 //    burn(uint256) (L139) es un burn genérico del usuario sin contexto de dapp.
@@ -117,15 +117,15 @@ import {Math} from "openzeppelin-contracts/contracts/utils/math/Math.sol";
 //    Sin ellos el subgraph mostraría dapps eliminadas y CIDs obsoletos.
 //
 // ----------------------------------------------------------------------------
-// 6) TRABAJO POSTERIOR A LA APROBACIÓN
+// 6) ESTADO DE LA IMPLEMENTACIÓN
 // ----------------------------------------------------------------------------
-//   1. Integrar eventos + emit en las funciones indicadas
-//   2. Añadir tests con vm.expectEmit en test/DappsManager.t.sol
-//   3. forge build && forge test
-//   4. Redeploy en Sepolia -> NUEVA dirección de contrato
-//   5. Actualizar direcciones: envexample, src/lib/ethers.svelte.js, README.md
-//   6. Crear subgraph (subgraph.yaml, schema.graphql, src/mapping.ts, abis/)
-//   7. Deploy a Subgraph Studio + configurar Subgraph MCP para el agente IA
+//   [x] 1. Eventos declarados + emit en las funciones indicadas
+//   [x] 2. Tests con vm.expectEmit en test/DappsManager.t.sol
+//   [x] 3. forge build && forge test
+//   [ ] 4. Redeploy en Sepolia -> NUEVA dirección de contrato
+//   [ ] 5. Actualizar direcciones: envexample, src/lib/ethers.svelte.js, README.md
+//   [x] 6. Subgraph creado (subgraph.yaml, schema.graphql, src/mapping.ts, abis/)
+//   [ ] 7. Deploy a Subgraph Studio + configurar Subgraph MCP para el agente IA
 // ============================================================================
 
 contract DappsManager is AccessControl {
@@ -137,18 +137,25 @@ contract DappsManager is AccessControl {
     error CallerNotDAO(address caller);
     error UnknownStatus(Status unknown);
 
-    // --- Events (The Graph integration) — PROPUESTA PENDIENTE DE APROBACIÓN ---
-    // Descomentar al aprobar la integración. Nota: VoteCast incluye `amount`
-    // (desviación de la estrategia) para que el subgraph calcule el delta de
-    // balance; DappRemoved y DappCIDUpdated evitan datos obsoletos en el índice.
-    // event DappRegistered(bytes32 indexed name, address indexed owner, string cid);
-    // event DappApproved(bytes32 indexed name);
-    // event DappBanned(bytes32 indexed name);
-    // event VoteCast(bytes32 indexed dapp, address indexed voter, uint256 voteRate, uint256 fanWeight, uint256 timestamp, uint256 amount);
-    // event TokensBurned(bytes32 indexed dapp, uint256 amount);
-    // event DappCashOut(bytes32 indexed dapp, address indexed owner, uint256 amount);
-    // event DappRemoved(bytes32 indexed name);
-    // event DappCIDUpdated(bytes32 indexed name, string cid);
+    // --- Events (The Graph integration) ---
+    // VoteCast incluye `amount` (desviación de la estrategia) para que el
+    // subgraph calcule el delta de balance; DappRemoved y DappCIDUpdated
+    // evitan datos obsoletos en el índice.
+    event DappRegistered(bytes32 indexed name, address indexed owner, string cid);
+    event DappApproved(bytes32 indexed name);
+    event DappBanned(bytes32 indexed name);
+    event VoteCast(
+        bytes32 indexed dapp,
+        address indexed voter,
+        uint256 voteRate,
+        uint256 fanWeight,
+        uint256 timestamp,
+        uint256 amount
+    );
+    event TokensBurned(bytes32 indexed dapp, uint256 amount);
+    event DappCashOut(bytes32 indexed dapp, address indexed owner, uint256 amount);
+    event DappRemoved(bytes32 indexed name);
+    event DappCIDUpdated(bytes32 indexed name, string cid);
 
     // airdrops
     uint256 public bonus;
@@ -279,7 +286,7 @@ contract DappsManager is AccessControl {
         dapps.push(name);
         _mint(msg.sender, 10 * bonus);
 
-        // emit DappRegistered(name, msg.sender, cid); // PROPUESTA The Graph
+        emit DappRegistered(name, msg.sender, cid);
     }
 
     function approveDapp(bytes32 _name) external {
@@ -287,7 +294,7 @@ contract DappsManager is AccessControl {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(DAO_ROLE, msg.sender));
         dappsIndex[_name].status = Status.Active;
 
-        // emit DappApproved(_name); // PROPUESTA The Graph
+        emit DappApproved(_name);
     }
 
     function banDapp(bytes32 _name) external {
@@ -295,7 +302,7 @@ contract DappsManager is AccessControl {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender) || hasRole(DAO_ROLE, msg.sender));
         dappsIndex[_name].status = Status.Banned;
 
-        // emit DappBanned(_name); // PROPUESTA The Graph
+        emit DappBanned(_name);
     }
 
     //function expiredDapp(bytes32 name) external {
@@ -310,7 +317,7 @@ contract DappsManager is AccessControl {
         require(msg.sender == dappsIndex[name].owner);
         dappsIndex[name].cid = cid;
 
-        // emit DappCIDUpdated(name, cid); // PROPUESTA The Graph
+        emit DappCIDUpdated(name, cid);
     }
 
     function rateDapp(bytes32 name, uint256 amount) external {}
@@ -328,7 +335,7 @@ contract DappsManager is AccessControl {
         dapps.pop();
         delete dappsIndex[name];
 
-        // emit DappRemoved(name); // PROPUESTA The Graph
+        emit DappRemoved(name);
     }
 
     function removeFan(uint256 index, address fan) public {
@@ -357,8 +364,12 @@ contract DappsManager is AccessControl {
 
     function DappNameExists(bytes32 _dapp) public view returns (bool) {
         Dapp storage dp = dappsIndex[_dapp];
-        return (!(bytes(dp.cid).length == 0 && dp.rate == 0 && dp.weight_votes_sum == 0 && dp.weight_total_sum == 0
-                    && dp.balance == 0 && dp.burned == 0 && dp.owner == address(0x0)));
+        return (
+            !(
+                bytes(dp.cid).length == 0 && dp.rate == 0 && dp.weight_votes_sum == 0 && dp.weight_total_sum == 0
+                    && dp.balance == 0 && dp.burned == 0 && dp.owner == address(0x0)
+            )
+        );
     }
 
     function voteDapp(bytes32 _name, uint256 _amount, uint256 _rate) external {
@@ -389,7 +400,7 @@ contract DappsManager is AccessControl {
         dapp.weight_total_sum += vote.fan_weight;
         dapp.rate = dapp.weight_votes_sum / dapp.weight_total_sum;
 
-        // emit VoteCast(_name, msg.sender, _rate, vote.fan_weight, block.timestamp, _amount); // PROPUESTA The Graph
+        emit VoteCast(_name, msg.sender, _rate, vote.fan_weight, block.timestamp, _amount);
 
         // Distribution
         //drnk.transferFrom(msg.sender, address(this), (_amount * DAOFee)); //charged on cashout
@@ -399,7 +410,7 @@ contract DappsManager is AccessControl {
         dapp.burned += ((_amount * burnFee) / 10_000);
         dapp.balance += _amount - ((_amount * burnFee) / 10_000) - ((_amount * DAOFee) / 10_000);
 
-        // emit TokensBurned(_name, (_amount * burnFee) / 10_000); // PROPUESTA The Graph
+        emit TokensBurned(_name, (_amount * burnFee) / 10_000);
     }
 
     function dappCashOut(bytes32 _name, uint256 _amount) external {
@@ -408,12 +419,12 @@ contract DappsManager is AccessControl {
         require(dapp.status == Status.Active, "Dapp is not active");
         require(dapp.owner == msg.sender, "Ups... You are not the dapp owner");
 
-        // dapp.balance -= _amount; // PROPUESTA The Graph: mantener contabilidad en sync
+        dapp.balance -= _amount; // mantener contabilidad en sync con el subgraph
         drnk.approve(msg.sender, _amount - ((_amount * DAOFee) / 10_000));
         drnk.transfer(msg.sender, _amount - ((_amount * DAOFee) / 10_000)); //charged on cashout
         drnk.transfer(DAOAddrss, (_amount * DAOFee) / 10_000); //charged on cashout
 
-        // emit DappCashOut(_name, msg.sender, _amount); // PROPUESTA The Graph
+        emit DappCashOut(_name, msg.sender, _amount);
     }
 
     function getAllFans() external view returns (address[] memory) {

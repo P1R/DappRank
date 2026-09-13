@@ -26,6 +26,14 @@ export async function querySubgraph(query, variables = {}) {
   if (json.errors && json.errors.length > 0) {
     throw new Error(`Subgraph query error: ${json.errors[0].message}`);
   }
+  // A non-GraphQL response (e.g. {"message":"Not found"} with HTTP 200 from
+  // an undeployed/renamed subgraph) has no `data`. Treat it as an error so
+  // callers fall back to direct contract reads instead of showing an empty list.
+  if (json.data === undefined) {
+    throw new Error(
+      `Subgraph returned no data: ${json.message ?? "unknown response"}`,
+    );
+  }
   return json.data;
 }
 

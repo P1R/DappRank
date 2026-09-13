@@ -1,4 +1,4 @@
 {
-  "extends": "@graphprotocol/graph-ts/node_modules/assemblyscript/tsconfig.assembly.json",
+  "extends": "@graphprotocol/graph-ts/node_modules/assemblyscript/tsconfig-base.json",
   "include": ["src"]
 }
