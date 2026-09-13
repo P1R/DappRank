@@ -18,7 +18,7 @@ DRNK Token contract address is: [0x9549A8CcaB9fF25Cf5061bFBC5188Baed0615B60](htt
 
 **Live subgraph endpoint:** [https://api.studio.thegraph.com/query/1760241/dapprank/v0.0.2](https://api.studio.thegraph.com/query/1760241/dapprank/v0.0.2)
 
-**Demo video:** [2–4 min presentation video](https://ethglobal.storage/projects/s9ron/video/high.mp4?t=1789317821603)
+**Demo video:** [2–4 min presentation video](https://ethglobal.storage/projects/s9ron/video/high.mp4)
 
 ### Qualification checklist
 
