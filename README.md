@@ -178,8 +178,11 @@ subgraph on The Graph protocol. Judges and teammates can run it directly.
 ## Install
 
 ```shell
-$ git clone https://github.com/P1R/DappRank.git
+# --recurse-submodules trae lib/openzeppelin-contracts (necesario para forge build)
+$ git clone --recurse-submodules https://github.com/P1R/DappRank.git
 ```
+
+> Si ya clonaste sin submodules: `git submodule update --init`
 
 ```shell
 $ cd DappRank
@@ -191,6 +194,17 @@ install frontend requirements
 $ bun install
 ```
 
+configura el entorno (variables públicas, sin llaves privadas)
+
+```shell
+$ cp envexample .env
+#   Editar con:
+#   VITE_SMARTCONTRACTADDRS="0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD"
+#   VITE_SUBGRAPH_URL="https://api.studio.thegraph.com/query/1760241/dapprank/v0.0.2"
+#   VITE_DAPPRANK_ENS_DOMAIN="dapprank.eth"
+#   VITE_ENS_REGISTRAR_ADDRESS="0xb43c137FbeCf425Ef4E294C9b3dAfE5319c3c389"
+```
+
 ## Frontend Development & Deployment
 
 run the development mode
@@ -199,7 +213,21 @@ run the development mode
 $ bun run dev --open
 ```
 
-to host the site use either fleek, piñata or nft.storage.
+build para producción (genera los ABIs con forge + compila el frontend)
+
+```shell
+$ bun run build    # → dist/
+```
+
+to host the site use either fleek, piñata or nft.storage — sube **solo la
+carpeta `dist/`** (los JSON de `out/` y `broadcast/` son intermedios de
+compilación, no se suben).
+
+> ⚠️ **Los contratos ya están desplegados en Sepolia** (DappsManager,
+> subregistry ENSv2 y helper de registro automático). Para desplegar el sitio
+> **no hace falta ejecutar ningún script on-chain ni tener llaves privadas** —
+> solo `bun run build` y subir `dist/` a IPFS. Los scripts de `script/` son
+> solo para el equipo (requieren `PRIVATE_KEY`).
 
 ## Foundry Usage
 
