@@ -8,13 +8,10 @@ dataSources:
     name: DappsManager
     network: sepolia
     source:
-      # TODO: replace with the NEW DappsManager address after redeploying the
-      # contract with events (the current Sepolia deployment emits no events).
-      address: "0x0000000000000000000000000000000000000000"
+      address: "0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD"
       abi: DappsManager
-      # TODO: set to the block where the new contract was deployed to avoid
-      # indexing the whole chain (e.g. 7000000).
-      startBlock: 0
+      # Deployment block of the contract with events (2026-09-13).
+      startBlock: 11692630
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

@@ -7,7 +7,7 @@ import { fetchDappsFromSubgraph } from "./subgraph.svelte.js";
 // Fall back to the deployed address when no VITE_SMARTCONTRACTADDRS is provided (e.g. no .env).
 const contractAddress =
   import.meta.env.VITE_SMARTCONTRACTADDRS ||
-  "0x428960cB8C32f3Ac6303517FA4A8D0A73E62Effd";
+  "0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD";
 const DappsManagerABI = compiledDappsManager.abi;
 const tokenContractABI = compiledTokenContract.abi;
 

@@ -8,9 +8,9 @@ Status Deployet at Sepolia:
 
 IPFS CID: bafybeidzfwsyugg4yxp46t6ag7ikjz43kh6oqgkxh2h5p2qynzjey4tipu
 
-Dapps contract address is: [0x428960cB8C32f3Ac6303517FA4A8D0A73E62Effd](https://sepolia.etherscan.io/address/0x428960cB8C32f3Ac6303517FA4A8D0A73E62Effd)
+Dapps contract address is: [0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD](https://sepolia.etherscan.io/address/0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD)
 
-DRNK Token contract address is: [0x9772986A2d4cAD7023C7Fb04990dd66D1fB23420](https://sepolia.etherscan.io/address/0x9772986A2d4cAD7023C7Fb04990dd66D1fB23420)
+DRNK Token contract address is: [0x9549A8CcaB9fF25Cf5061bFBC5188Baed0615B60](https://sepolia.etherscan.io/address/0x9549A8CcaB9fF25Cf5061bFBC5188Baed0615B60)
 
 The DappRank DeFi model introduces a revolutionary decentralized ranking system
 for dapps using a novel voting mechanism called Square Root Weighted Voting
@@ -200,22 +200,21 @@ lenguaje natural.
 
 ### Estado
 
-- [x] Propuesta de eventos documentada en `src-sc/DappsManager.sol` (comentada, pendiente de aprobación)
+- [x] Eventos integrados y desplegados en `DappsManager.sol` (2026-09-13)
 - [x] Proyecto subgraph en [`subgraph/`](./subgraph/README.md)
 - [x] Frontend preparado para leer del subgraph con fallback al contrato (`src/lib/subgraph.svelte.js`)
-- [ ] Aprobar e integrar los eventos en `src-sc/DappsManager.sol`
-- [ ] Redeploy del contrato en Sepolia (el despliegue actual no emite eventos)
+- [x] Contrato redeployado en Sepolia con eventos (`0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD`)
 - [ ] Desplegar subgraph a Subgraph Studio
 - [ ] Configurar Subgraph MCP para el agente IA
 
 ### Contrato
 
-La propuesta (pendiente de aprobación) añade a `DappsManager.sol` los eventos:
-`DappRegistered`, `DappApproved`, `DappBanned`, `VoteCast`, `TokensBurned`,
-`DappCashOut`, `DappRemoved` y `DappCIDUpdated`. `VoteCast` incluye `amount`
-para que el subgraph calcule el delta de balance. También propone que
-`dappCashOut()` descuente `dapp.balance` (corrección de contabilidad
-pre-existente). Todo está comentado en el contrato hasta su aprobación.
+`DappsManager.sol` emite los eventos `DappRegistered`, `DappApproved`,
+`DappBanned`, `VoteCast`, `TokensBurned`, `DappCashOut`, `DappRemoved` y
+`DappCIDUpdated`. `VoteCast` incluye `amount` para que el subgraph calcule el
+delta de balance. `dappCashOut()` descuenta `dapp.balance` (contabilidad en
+sync). También se corrigió la emisión inflacionaria de DRNK (el `multiplier`
+de los fans se inicializa en `1`, ver [`FIX_MULTIPLIER.md`](./FIX_MULTIPLIER.md)).
 
 ### Subgraph
 

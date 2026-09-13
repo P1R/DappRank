@@ -1,0 +1,38 @@
+# Local graph-node stack for testing the DappRank subgraph against Sepolia.
+# Usage:
+#   docker compose up -d
+#   bun run create-local
+#   bun run deploy-local
+# Then query at http://localhost:8000/subgraphs/name/dapprank/graphql
+version: "3"
+services:
+  graph-node:
+    image: graphprotocol/graph-node:latest
+    ports:
+      - "8000:8000"
+    depends_on:
+      - ipfs
+      - postgres
+    environment:
+      postgres_host: postgres
+      postgres_user: graph-node
+      postgres_pass: let-me-in
+      postgres_db: graph-node
+      ipfs: "http://ipfs:5001"
+      GRAPH_LOG: info
+      # Sepolia public RPC/WS endpoints (no API key needed)
+      ETHEREUM_RPC: https://ethereum-sepolia-rpc.publicnode.com
+      ETHEREUM_NETWORK: sepolia
+      ETHEREUM_WS: wss://ethereum-sepolia-ws.publicnode.com
+  ipfs:
+    image: ipfs/kubo:v0.17.0
+    ports:
+      - "5001:5001"
+  postgres:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: graph-node
+      POSTGRES_PASSWORD: let-me-in
+      POSTGRES_DB: graph-node
