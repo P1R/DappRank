@@ -104,8 +104,8 @@ A Uniswap v4 hook (`DrnkUltrasoundHook`) has been implemented that burns a confi
 | Unit tests | Complete | - |
 | Fuzz/Invariant tests | Complete | - |
 | Pool integration tests | Complete | - |
-| CREATE2 deployment | In Progress | Arachnid CREATE2 factory not on Sepolia |
-| Production pool funding | Pending | Requires CREATE2 factory deployment |
+| CREATE2 deployment | Blocked | v4-core PoolManager requires solc 0.8.26 exactly; project uses 0.8.36 |
+| Production pool funding | Blocked | Requires CREATE2 factory + compiler resolution |
 
 ### Key Hook Features
 
