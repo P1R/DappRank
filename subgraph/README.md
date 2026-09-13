@@ -7,11 +7,11 @@ razonamiento en lenguaje natural sobre los datos indexados.
 
 ## Entidades
 
-| Entidad      | Descripción                                                                 |
-| ------------ | --------------------------------------------------------------------------- |
-| `Dapp`       | Una dApp registrada: rating SRWV, balance, burned, estado, owner, CID       |
-| `Vote`       | Un voto individual: votante, `voteRate` (Vi), `fanWeight` (√Ti), timestamp  |
-| `GlobalStat` | Métricas globales: total dapps, votos, DRNK quemado, balance total          |
+| Entidad      | Descripción                                                                |
+| ------------ | -------------------------------------------------------------------------- |
+| `Dapp`       | Una dApp registrada: rating SRWV, balance, burned, estado, owner, CID      |
+| `Vote`       | Un voto individual: votante, `voteRate` (Vi), `fanWeight` (√Ti), timestamp |
+| `GlobalStat` | Métricas globales: total dapps, votos, DRNK quemado, balance total         |
 
 ## Eventos indexados
 
@@ -29,8 +29,8 @@ razonamiento en lenguaje natural sobre los datos indexados.
 - Node.js 18+ / bun
 - Una cuenta en [Subgraph Studio](https://thegraph.com/studio/) con un subgraph
   creado (slug `dapprank` o el que uses)
-- El contrato **redeployado** en Sepolia con eventos (el despliegue actual
-  `0x428960cB8C32f3Ac6303517FA4A8D0A73E62Effd` NO emite eventos)
+- El contrato desplegado en Sepolia con eventos
+  `0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD` (desplegado 2026-09-13)
 
 ## Pasos de despliegue
 

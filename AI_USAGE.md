@@ -115,3 +115,55 @@ El agente de IA (DeepSeek en Zed) rediseñó la interfaz con enfoque **mobile-fi
 ---
 
 _Secciones adicionales se agregarán aquí cuando el equipo lo indique, especificando los archivos correspondientes._
+
+---
+
+## Integración con The Graph — propuesta (2026-09-12)
+
+### Contexto
+
+Preparación de la integración de The Graph según la estrategia ETHOnline 2026
+(premio The Graph — Best AI Tooling/AI Use Case). El agente de IA (DeepSeek en
+Zed) preparó la propuesta de eventos y la infraestructura de soporte, dirigido
+por el equipo. **Los cambios en el contrato están comentados y pendientes de
+aprobación del equipo** — no se ha modificado el comportamiento on-chain.
+
+### Propuesta en contratos (PENDIENTE DE APROBACIÓN)
+
+- **`src-sc/DappsManager.sol`**: propuesta de 8 eventos (`DappRegistered`,
+  `DappApproved`, `DappBanned`, `VoteCast`, `TokensBurned`, `DappCashOut`,
+  `DappRemoved`, `DappCIDUpdated`) con sus `emit` en las funciones
+  correspondientes, **todo comentado** (no activo). `VoteCast` incluye `amount`
+  (desviación de la estrategia) para que el subgraph calcule el delta de
+  balance. También se propone corregir `dappCashOut()` para que descuente
+  `dapp.balance` (inconsistencia pre-existente). El bloque de propuesta en el
+  contrato documenta el diseño y las decisiones.
+- **`test/DappsManager.t.sol`**: 7 tests con `vm.expectEmit` preparados pero
+  **comentados** (se activan junto con los eventos).
+
+### Infraestructura de soporte (lista para cuando se apruebe)
+
+- **`subgraph/`** (nuevo): `subgraph.yaml`, `schema.graphql` (entidades `Dapp`,
+  `Vote`, `GlobalStat`), `src/mapping.ts` (handlers AssemblyScript), ABI
+  compilado, `package.json`, `tsconfig.json` y `README.md` con instrucciones
+  de despliegue. El ABI incluido corresponde a la versión con eventos de la
+  propuesta; habrá que regenerarlo desde el contrato final aprobado.
+- **`src/lib/subgraph.svelte.js`** (nuevo): capa GraphQL para consultar el
+  subgraph (`querySubgraph`, `fetchDappsFromSubgraph`, `fetchGlobalStat`),
+  mapeando al mismo shape `DappInfo` del contrato.
+- **`src/lib/ethers.svelte.js`**: `refreshDappsList()` prioriza el subgraph
+  (público, sin wallet) con fallback a lecturas del contrato; nuevo estado
+  `dataSource`.
+- **`src/components/InvestorInsights.svelte`** (nuevo): métricas globales del
+  subgraph (dapps, votos, DRNK quemado, balance) y top dapps deflacionarias,
+  con indicador "Indexed live by The Graph".
+- **`src/App.svelte`**: se monta `InvestorInsights` sobre el ranking.
+
+### Qué NO generó la IA (contribución del equipo)
+
+- La decisión de mantener los eventos como propuesta pendiente de aprobación.
+- La aprobación de la propuesta de eventos y las desviaciones (VoteCast con
+  `amount`, fix de balance en cashout, eventos `DappRemoved`/`DappCIDUpdated`).
+- El redeploy del contrato en Sepolia y el despliegue del subgraph a Subgraph
+  Studio (requieren claves privadas / cuenta).
+- La configuración del Subgraph MCP en su cliente de IA.

@@ -2,6 +2,7 @@
     import WalletConnector from "./components/WalletConnector.svelte";
     import DappsData from "./components/DappsData.svelte";
     import DappRankList from "./components/DappRankList.svelte";
+    import InvestorInsights from "./components/InvestorInsights.svelte";
     import GetDRNK from "./components/GetDRNK.svelte";
     import RegisterDapp from "./components/RegisterDapp.svelte";
     import Vote4DappModal from "./components/Vote4DappModal.svelte";
@@ -148,6 +149,7 @@
 
 <main id="main-content" class="relative text-center page-gutter">
     <div class="bg-scene"></div>
+    <InvestorInsights />
     <DappRankList />
 </main>
 
