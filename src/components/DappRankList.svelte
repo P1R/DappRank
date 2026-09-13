@@ -1,228 +1,420 @@
 <script>
-  import { ethVars } from '../lib/ethers.svelte.js';
-  import { toUtf8String, formatUnits } from 'ethers';
+    import { ethVars } from "../lib/ethers.svelte.js";
+    import { openVoteModal } from "../lib/modal.svelte.js";
+    import { t } from "../lib/i18n.svelte.js";
+    import { toUtf8String, formatUnits } from "ethers";
+    import { MorphIcon } from "morphicons/svelte";
+    import { Trophy, Flame, CircleCheck, Vote } from "lucide";
 
-  // ToDo Must order them before
-  //  const sortedDapps = [...DappsList].sort((a, b) => {
-  //  const rateA = parseInt(a.rate) || 0;
-  //  const rateB = parseInt(b.rate) || 0;
-  //  return rateB - rateA; // Descending order
-  //});
+    /** @typedef {'high' | 'mid' | 'low' | 'neutral'} Tier */
 
-  //// Initialize data array
-  let data = $derived(ethVars.dappsList.map((dapp, index) => ({
-      rank: index + 1, // Assign rank based on sorted position
-      name: dapp.name ? toUtf8String(dapp.name) : 'Unknown DApp',
-      url: dapp.cid ? `https://ipfs.io/ipfs/${dapp.cid}` : '#',
-      rating: parseInt(dapp.rate) || 0,
-      tokensDonated: formatUnits(dapp.balance, 18) || 0,
-      tokensBurned: formatUnits(dapp.burned, 18) || 0,
-      owner: dapp.owner,
-      status: dapp.status ? toUtf8String(dapp.status) : 'Unknown',
-      tags: ['DApp', 'Web3'] // You can customize tags based on dapp properties
-    })));
-  //let data = $derived(ethVars.dappsList);
-  $effect(() => {
-      console.log("updated data", $state.snapshot(data));
-  });
+    /** @type {Record<string, Tier>} */
+    const STATUS_TIER = {
+        Active: "high",
+        Submitted: "neutral",
+        Expired: "mid",
+        Banned: "low",
+    };
+
+    /** @type {Record<Tier, string>} */
+    let TIER_LABEL = $derived({
+        high: t("rank.tierHigh"),
+        mid: t("rank.tierMid"),
+        low: t("rank.tierLow"),
+        neutral: t("rank.tierNeutral"),
+    });
+    /** @type {Record<Tier, string>} */
+    const TIER_TEXT_CLASS = {
+        high: "text-trust-high",
+        mid: "text-trust-mid",
+        low: "text-trust-low",
+        neutral: "text-trust-neutral",
+    };
+    /** @type {Record<Tier, string>} */
+    const TIER_BADGE_CLASS = {
+        high: "tier-badge-high",
+        mid: "tier-badge-mid",
+        low: "tier-badge-low",
+        neutral: "tier-badge-neutral",
+    };
+    /** @type {Record<Tier, string>} */
+    const TIER_GRADIENT = {
+        high: "linear-gradient(90deg, var(--color-trust-high), var(--color-neon-cyan))",
+        mid: "linear-gradient(90deg, var(--color-trust-mid), var(--color-neon-pink))",
+        low: "linear-gradient(90deg, var(--color-trust-low), var(--color-neon-pink))",
+        neutral:
+            "linear-gradient(90deg, var(--color-trust-neutral), var(--color-neon-pink))",
+    };
+
+    /** @param {number} rating @returns {'high' | 'mid' | 'low'} */
+    function ratingTier(rating) {
+        if (rating >= 80) return "high";
+        if (rating >= 50) return "mid";
+        return "low";
+    }
+
+    /** @param {string} str @returns {string} */
+    function stripNulls(str) {
+        return str ? str.replace(/\0/g, "") : str;
+    }
+
+    let rawData = $derived(
+        ethVars.dappsList.map((dapp) => {
+            const rating = parseInt(dapp.rate) || 0;
+            const status = dapp.status
+                ? stripNulls(toUtf8String(dapp.status))
+                : t("rank.statusUnknown");
+            return {
+                name: dapp.name
+                    ? stripNulls(toUtf8String(dapp.name))
+                    : t("rank.unknownDapp"),
+                rawName: dapp.name,
+                ensName: dapp.ensName || null,
+                ensResolved: dapp.ensResolved || false,
+                url: dapp.cid ? `https://ipfs.io/ipfs/${dapp.cid}` : "#",
+                rating,
+                tier: ratingTier(rating),
+                tokensDonated: Number(formatUnits(dapp.balance ?? 0, 18)) || 0,
+                tokensBurned: Number(formatUnits(dapp.burned ?? 0, 18)) || 0,
+                owner: dapp.owner,
+                ownerShort: dapp.owner
+                    ? `${dapp.owner.slice(0, 6)}...${dapp.owner.slice(-4)}`
+                    : "—",
+                status,
+                statusTier: STATUS_TIER[status] || "neutral",
+                weightTotalSum: Number(dapp.weight_total_sum) || 0,
+            };
+        }),
+    );
+
+    let maxWeightTotal = $derived(
+        Math.max(1, ...rawData.map((d) => d.weightTotalSum)),
+    );
+
+    let data = $derived(
+        [...rawData]
+            .sort((a, b) => b.rating - a.rating)
+            .map((item, index) => ({
+                ...item,
+                rank: index + 1,
+                consensusPct: Math.round(
+                    (item.weightTotalSum / maxWeightTotal) * 100,
+                ),
+            })),
+    );
+
+    let totalBurned = $derived(
+        rawData.reduce((sum, d) => sum + d.tokensBurned, 0),
+    );
 </script>
 
-<div class="container">
-  {#each data as item}
-    <div class="ranking-card">
-      <div class="card-header">
-        <div class="rank">#{item.rank}</div>
-        <div class="dapp-name">{item.name}</div>
-      </div>
-      <div class="dapp-url"><a href={item.url}>{item.url}</a></div>
-      <div class="stats">
-        <div class="stat-box">
-          <div class="stat-value">{item.rating}</div>
-          <div class="stat-label">RATING</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-value">{item.tokensDonated}</div>
-          <div class="stat-label">TOKENS DONATED</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-value">{item.tokensBurned}</div>
-          <div class="stat-label">BURNED</div>
-        </div>
-      </div>
-      <div class="rating-bar">
-        <div class="rating-fill" style="--rating-width: {item.rating}%"></div>
-      </div>
-      <div class="tags">
-        <span class="tag">Owner: {item.owner.slice(0, 6)}...{item.owner.slice(-4)}</span>
-        <span class="tag">Status: {item.status}</span>
-      </div>
+{#if ethVars.isLoading}
+    <div
+        class="mx-auto my-12 max-w-md rounded-xl border border-neon-cyan/20 bg-void/60 p-8 text-center shadow-md"
+        role="status"
+        aria-live="polite"
+    >
+        <div
+            class="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-neon-cyan/30 border-t-neon-cyan"
+        ></div>
+        <p class="text-lg font-semibold text-neon-cyan">{t("rank.loading")}</p>
+        <p class="mt-1 text-sm opacity-80">
+            {t("rank.loadingSub")}
+        </p>
     </div>
-  {/each}
-</div>
+{:else if data.length > 0}
+    <div class="mx-auto max-w-350 pt-6">
+        <div
+            class="mx-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-neon-pink/30 bg-neon-pink/10 px-5 py-2 text-sm font-semibold text-neon-pink"
+        >
+            <span aria-hidden="true">🔥</span>
+            <span>{t("rank.totalBurned")}</span>
+            <span class="text-base font-bold tabular-nums"
+                >{totalBurned.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                })}</span
+            >
+        </div>
+    </div>
 
-<style>
-  /* Main container */
-  .container {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 20px;
-  }
+    <!-- MOBILE: cards (single column, no horizontal scroll) -->
+    <div class="mx-auto grid max-w-350 grid-cols-1 gap-4 py-4 md:hidden">
+        {#each data as item}
+            <article class="card p-4">
+                <div class="flex items-center justify-between gap-2">
+                    <span
+                        class="flex items-center gap-1.5 tabular-nums font-semibold {item.rank <=
+                        3
+                            ? 'text-neon-pink'
+                            : 'text-ink/70'}"
+                    >
+                        {#if item.rank <= 3}
+                            <MorphIcon
+                                icon={Trophy}
+                                class="h-4 w-4"
+                                aria-hidden="true"
+                            />
+                        {/if}
+                        #{item.rank}
+                    </span>
+                    <span class={TIER_BADGE_CLASS[item.statusTier]}>
+                        <span
+                            class="h-1.5 w-1.5 rounded-full bg-current"
+                            aria-hidden="true"
+                        ></span>
+                        {item.status}
+                    </span>
+                </div>
 
-  /* Ranking card */
-  .ranking-card {
-    background: rgba(10, 10, 30, 0.7);
-    border: 1px solid rgba(0, 255, 204, 0.3);
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
+                <h2 class="mt-2 text-lg font-semibold text-neon-cyan">
+                    {item.ensResolved ? item.ensName : item.name}
+                </h2>
+                {#if item.ensResolved}
+                    <span
+                        class="mt-1 inline-flex items-center gap-1 rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-neon-cyan"
+                        title={t("rank.ensv2")}>ENSv2</span
+                    >
+                {/if}
+                <a
+                    href={item.url}
+                    class="block break-all text-xs opacity-60"
+                    aria-label={t("rank.openOnIpfs", { name: item.name })}
+                    >{item.url}</a
+                >
 
-  .ranking-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
-    border-color: rgba(255, 0, 255, 0.5);
-  }
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-sm opacity-70">{t("rank.rating")}</span>
+                    <span class="flex items-center gap-2">
+                        <span
+                            class="tabular-nums font-semibold {TIER_TEXT_CLASS[
+                                item.tier
+                            ]}">{item.rating}</span
+                        >
+                        <span class={TIER_BADGE_CLASS[item.tier]}>
+                            <span
+                                class="h-1.5 w-1.5 rounded-full bg-current"
+                                aria-hidden="true"
+                            ></span>
+                            {TIER_LABEL[item.tier]}
+                        </span>
+                    </span>
+                </div>
+                <div class="mt-1 h-2 overflow-hidden rounded-full bg-black/30">
+                    <div
+                        class="h-full rounded-full"
+                        style="width: {item.rating}%; background: {TIER_GRADIENT[
+                            item.tier
+                        ]};"
+                    ></div>
+                </div>
 
-  .ranking-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, #00ffcc, #ff00ff, #00ffcc);
-    animation: gradient 3s linear infinite;
-    background-size: 200% 200%;
-  }
+                <div class="mt-3 grid grid-cols-2 gap-3">
+                    <div
+                        class="flex flex-col items-center rounded-md border border-neon-cyan/20 bg-black/20 px-3 py-2"
+                    >
+                        <div
+                            class="text-sm tabular-nums font-semibold text-ink/90"
+                        >
+                            {item.tokensDonated}
+                        </div>
+                        <div class="text-xs opacity-60">
+                            {t("rank.donated")}
+                        </div>
+                    </div>
+                    <div
+                        class="flex flex-col items-center rounded-md border border-neon-cyan/20 bg-black/20 px-3 py-2"
+                    >
+                        <div
+                            class="flex items-center gap-1 text-sm tabular-nums font-semibold text-ink/90"
+                        >
+                            <MorphIcon
+                                icon={Flame}
+                                class="h-3.5 w-3.5"
+                                aria-hidden="true"
+                            />
+                            {item.tokensBurned}
+                        </div>
+                        <div class="text-xs opacity-60">{t("rank.burned")}</div>
+                    </div>
+                </div>
 
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(0, 255, 204, 0.2);
-  }
+                <div
+                    class="mt-3 flex items-center justify-between text-xs opacity-70"
+                >
+                    <span>{t("rank.backing")}</span>
+                    <span class="tabular-nums font-semibold text-neon-cyan"
+                        >{item.consensusPct}%</span
+                    >
+                </div>
+                <div
+                    class="mt-1 h-1.5 overflow-hidden rounded-full bg-black/30"
+                >
+                    <div
+                        class="h-full rounded-full bg-linear-to-r from-neon-cyan to-neon-pink"
+                        style="width: {item.consensusPct}%"
+                    ></div>
+                </div>
 
-  .rank {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #ff00ff;
-    text-shadow: 0 0 10px rgba(255, 0, 255, 0.7);
-  }
+                <div class="mt-3 text-xs opacity-60">
+                    {t("rank.owner", { owner: item.ownerShort })}
+                </div>
 
-  .dapp-name {
-    font-size: 1.5rem;
-    color: #00ffcc;
-    text-shadow: 0 0 5px rgba(0, 255, 204, 0.7);
-  }
+                <button
+                    class="btn-neon mt-3 w-full py-2 text-sm"
+                    onclick={() => openVoteModal(item.rawName)}
+                >
+                    <MorphIcon icon={Vote} class="h-4 w-4" aria-hidden="true" />
+                    {t("rank.vote")}
+                </button>
+            </article>
+        {/each}
+    </div>
 
-  .dapp-url {
-    color: #ff00ff;
-    font-size: 0.9rem;
-    margin-top: 5px;
-    word-break: break-all;
-  }
-
-  .stats {
-    display: flex;
-    justify-content: space-between;
-    margin: 20px 0;
-  }
-
-  .stat-box {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(0, 255, 204, 0.2);
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-    flex: 1;
-    margin: 0 10px;
-    transition: all 0.3s ease;
-  }
-
-  .stat-box:hover {
-    background: rgba(0, 255, 204, 0.1);
-    transform: scale(1.05);
-  }
-
-  .stat-value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #00ffcc;
-    text-shadow: 0 0 10px rgba(0, 255, 204, 0.7);
-  }
-
-  .stat-label {
-    font-size: 0.9rem;
-    opacity: 0.8;
-  }
-
-  .rating-bar {
-    height: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-    margin: 15px 0;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .rating-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #00ffcc, #ff00ff);
-    border-radius: 5px;
-    width: var(--rating-width);
-    animation: fill 2s ease-in-out;
-  }
-
-  .rating-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    animation: shine 3s infinite;
-  }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 15px;
-  }
-
-  .tag {
-    background: rgba(0, 255, 204, 0.1);
-    border: 1px solid rgba(0, 255, 204, 0.3);
-    border-radius: 20px;
-    padding: 5px 15px;
-    font-size: 0.8rem;
-    color: #00ffcc;
-  }
-
-  /* Responsive design */
-  @media (max-width: 768px) {
-    .stats {
-      flex-direction: column;
-    }
-
-    .stat-box {
-      margin: 5px 0;
-    }
-
-    .card-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .dapp-name {
-      margin-top: 10px;
-    }
-  }
-</style>
+    <!-- DESKTOP: table (same columns, no reflow) -->
+    <div class="mx-auto max-w-350 table-scroll py-4 hidden md:block">
+        <table class="w-full border-collapse text-left">
+            <caption class="sr-only">{t("rank.caption")}</caption>
+            <thead>
+                <tr
+                    class="border-b border-neon-cyan/25 text-xs uppercase tracking-wide text-neon-cyan/70"
+                >
+                    <th scope="col" class="px-3 py-3 font-semibold"
+                        >{t("rank.colRank")}</th
+                    >
+                    <th scope="col" class="px-3 py-3 font-semibold"
+                        >{t("rank.colDapp")}</th
+                    >
+                    <th scope="col" class="px-3 py-3 font-semibold"
+                        >{t("rank.colRating")}</th
+                    >
+                    <th scope="col" class="px-3 py-3 text-right font-semibold"
+                        >{t("rank.colDonated")}</th
+                    >
+                    <th scope="col" class="px-3 py-3 text-right font-semibold"
+                        >{t("rank.colBurned")}</th
+                    >
+                    <th scope="col" class="px-3 py-3 text-right font-semibold"
+                        >{t("rank.colBacking")}</th
+                    >
+                    <th scope="col" class="px-3 py-3 font-semibold"
+                        >{t("rank.colStatus")}</th
+                    >
+                    <th scope="col" class="px-3 py-3 font-semibold"
+                        >{t("rank.colVote")}</th
+                    >
+                </tr>
+            </thead>
+            <tbody>
+                {#each data as item}
+                    <tr
+                        class="border-b border-neon-cyan/10 transition-colors duration-200 hover:bg-neon-cyan/5"
+                    >
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span
+                                class="flex items-center gap-1.5 tabular-nums {item.rank <=
+                                3
+                                    ? 'font-semibold text-neon-pink'
+                                    : 'text-ink/70'}"
+                            >
+                                {#if item.rank <= 3}
+                                    <MorphIcon
+                                        icon={Trophy}
+                                        class="h-4 w-4"
+                                        aria-hidden="true"
+                                    />
+                                {/if}
+                                {item.rank}
+                            </span>
+                        </td>
+                        <td class="px-3 py-3">
+                            <div class="font-medium text-neon-cyan">
+                                {item.ensResolved ? item.ensName : item.name}
+                                {#if item.ensResolved}
+                                    <span
+                                        class="ml-1.5 inline-flex items-center gap-1 rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-neon-cyan"
+                                        title={t("rank.ensv2")}>ENSv2</span
+                                    >
+                                {/if}
+                            </div>
+                            <div class="break-all text-xs opacity-60">
+                                <a
+                                    href={item.url}
+                                    class="hover:opacity-100"
+                                    aria-label={t("rank.openOnIpfs", {
+                                        name: item.name,
+                                    })}>{item.url}</a
+                                >
+                            </div>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <span
+                                    class="tabular-nums font-semibold {TIER_TEXT_CLASS[
+                                        item.tier
+                                    ]}">{item.rating}</span
+                                >
+                                <span class={TIER_BADGE_CLASS[item.tier]}>
+                                    <span
+                                        class="h-1.5 w-1.5 rounded-full bg-current"
+                                        aria-hidden="true"
+                                    ></span>
+                                    {TIER_LABEL[item.tier]}
+                                </span>
+                            </div>
+                            <div
+                                class="mt-1 h-1.5 overflow-hidden rounded-full bg-black/30"
+                            >
+                                <div
+                                    class="h-full rounded-full"
+                                    style="width: {item.rating}%; background: {TIER_GRADIENT[
+                                        item.tier
+                                    ]};"
+                                ></div>
+                            </div>
+                        </td>
+                        <td
+                            class="px-3 py-3 text-right tabular-nums text-ink/90"
+                            >{item.tokensDonated}</td
+                        >
+                        <td
+                            class="px-3 py-3 text-right tabular-nums text-ink/90"
+                            >{item.tokensBurned}</td
+                        >
+                        <td
+                            class="px-3 py-3 text-right tabular-nums text-ink/90"
+                            >{item.consensusPct}%</td
+                        >
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <span class={TIER_BADGE_CLASS[item.statusTier]}>
+                                <span
+                                    class="h-1.5 w-1.5 rounded-full bg-current"
+                                    aria-hidden="true"
+                                ></span>
+                                {item.status}
+                            </span>
+                        </td>
+                        <td class="px-3 py-3 whitespace-nowrap">
+                            <button
+                                class="btn-neon px-3 py-1.5 text-xs"
+                                onclick={() => openVoteModal(item.rawName)}
+                            >
+                                {t("rank.vote")}
+                            </button>
+                        </td>
+                    </tr>
+                {/each}
+            </tbody>
+        </table>
+    </div>
+{:else}
+    <div
+        class="mx-auto my-12 max-w-md rounded-xl border border-neon-cyan/20 bg-void/60 p-8 text-center shadow-md"
+    >
+        <p class="mb-2 text-lg font-semibold text-neon-cyan">
+            {t("rank.empty")}
+        </p>
+        <p class="text-sm opacity-80">
+            {t("rank.emptySub")}
+        </p>
+    </div>
+{/if}

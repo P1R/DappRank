@@ -1,99 +1,240 @@
-import { ethers } from 'ethers';
-import compiledDappsManager from '../../out/DappsManager.sol/DappsManager.json';
-import compiledTokenContract from '../../out/DRNK.sol/DappRank.json';
+import { ethers } from "ethers";
+import compiledDappsManager from "../../out/DappsManager.sol/DappsManager.json";
+import compiledTokenContract from "../../out/DRNK.sol/DappRank.json";
+import { fetchDappsFromSubgraph } from "./subgraph.svelte.js";
+import { attachEnsNames } from "./ens.svelte.js";
 
-const contractAddress = import.meta.env.VITE_SMARTCONTRACTADDRS;
+// The DappsManager contract is already deployed on Sepolia testnet.
+// Fall back to the deployed address when no VITE_SMARTCONTRACTADDRS is provided (e.g. no .env).
+const contractAddress =
+  import.meta.env.VITE_SMARTCONTRACTADDRS ||
+  "0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD";
 const DappsManagerABI = compiledDappsManager.abi;
 const tokenContractABI = compiledTokenContract.abi;
 
-let provider = null;
-let signer = null;
-let signerAddress = null;
-let contract = null;
-let tokenContract = null;
-let tokenContractAddress = null;
-let dappsList = [];
+/**
+ * @typedef {Object} DappInfo
+ * @property {string} name
+ * @property {string} [nameStr]
+ * @property {string} cid
+ * @property {string} rate
+ * @property {string} weight_votes_sum
+ * @property {string} weight_total_sum
+ * @property {string} balance
+ * @property {string} burned
+ * @property {string} owner
+ * @property {string} status
+ * @property {string} [ensName] Nombre ENSv2 (<label>.dapprank.eth)
+ * @property {boolean} [ensResolved] true si el subname resolvió vía ENSv2
+ * @property {string | null} [ensCid] CID IPFS del record dapprank.cid
+ */
+
+/**
+ * @typedef {Object} EthVarsState
+ * @property {ethers.BrowserProvider | null} provider
+ * @property {ethers.JsonRpcSigner | null} signer
+ * @property {string | null} signerAddress
+ * @property {string} contractAddress
+ * @property {ethers.Contract | null} contract
+ * @property {ethers.Contract | null} tokenContract
+ * @property {string | null} tokenContractAddress
+ * @property {DappInfo[]} dappsList
+ * @property {'subgraph' | 'contract'} dataSource
+ * @property {boolean} isLoading
+ * @property {bigint | null} tokenBalance
+ * @property {string} tokenSymbol
+ * @property {number} tokenDecimals
+ */
+
+/** @type {EthVarsState} */
+export const ethVars = $state({
+  provider: null,
+  signer: null,
+  signerAddress: null,
+  contractAddress: contractAddress,
+  contract: null,
+  tokenContract: null,
+  tokenContractAddress: null,
+  dappsList: [],
+  dataSource: "contract",
+  isLoading: false,
+  tokenBalance: null,
+  tokenSymbol: "DRNK",
+  tokenDecimals: 18,
+});
 
 export async function connectWallet() {
-  if (typeof window.ethereum === 'undefined') {
-    alert('Please install a Web3 wallet like MetaMask.');
-    return;
+  if (typeof window.ethereum === "undefined") {
+    alert("Please install a Web3 wallet like MetaMask.");
+    return null;
   }
 
   try {
     const browserProvider = new ethers.BrowserProvider(window.ethereum);
     const newSigner = await browserProvider.getSigner();
-    provider = browserProvider;
-    signer = newSigner;
-    signerAddress = await newSigner.getAddress();
-    return signerAddress;
+    const address = await newSigner.getAddress();
+    // Update the reactive object
+    ethVars.provider = browserProvider;
+    ethVars.signer = newSigner;
+    ethVars.signerAddress = address;
+    return address;
   } catch (error) {
-    console.error('User rejected the request:', error);
+    console.error("User rejected the request:", error);
     return null;
   }
 }
 
- export async function connectContract() {
-     if (typeof window.ethereum === 'undefined') {
-         alert('Please install a Web3 wallet like MetaMask.');
-         return;
-     }
-     if (contractAddress === null) {
-         alert('Error reading smart contract address, verify the chain or .env');
-         return;
-     }
-     if (signer === null) {
-         alert('ensure there is a signer by connecting the wallet');
-         return;
-     }
+export async function connectContract() {
+  if (typeof window.ethereum === "undefined") {
+    alert("Please install a Web3 wallet like MetaMask.");
+    return null;
+  }
+  if (ethVars.contractAddress === null) {
+    alert("Error reading smart contract address, verify the chain or .env");
+    return null;
+  }
+  if (ethVars.signer === null) {
+    alert("ensure there is a signer by connecting the wallet");
+    return null;
+  }
 
-     try {
-         contract = new ethers.Contract(contractAddress, DappsManagerABI, signer);
-         return contract;
-     } catch (error) {
-         console.error('Failed to connect contract:', error);
-         throw error;
-     }
- }
+  try {
+    ethVars.contract = new ethers.Contract(
+      ethVars.contractAddress,
+      DappsManagerABI,
+      ethVars.signer,
+    );
+    return ethVars.contract;
+  } catch (error) {
+    console.error("Failed to connect contract:", error);
+    throw error;
+  }
+}
 
- export async function connectTokenContract() {
-     if (typeof window.ethereum === 'undefined') {
-         alert('Please install a Web3 wallet like MetaMask.');
-         return;
-     }
-     if (contract === null) {
-         alert('Error reading smart contract address, verify the chain or .env');
-         return;
-     }
-     if (signer === null) {
-         alert('ensure there is a signer by connecting the wallet');
-         return;
-     }
-     if (tokenContractAddress === null) {
-         try {
-             tokenContractAddress = await contract.drnk();
-         } catch (error) {
-             console.error('Failed to get token contract address:', error);
-             throw error;
-         }
-     }
+export async function connectTokenContract() {
+  if (typeof window.ethereum === "undefined") {
+    alert("Please install a Web3 wallet like MetaMask.");
+    return null;
+  }
+  if (ethVars.contract === null) {
+    alert("Error reading smart contract address, verify the chain or .env");
+    return null;
+  }
+  if (ethVars.signer === null) {
+    alert("ensure there is a signer by connecting the wallet");
+    return null;
+  }
+  if (ethVars.tokenContractAddress === null) {
+    try {
+      ethVars.tokenContractAddress = await ethVars.contract.drnk();
+    } catch (error) {
+      console.error("Failed to get token contract address:", error);
+      throw error;
+    }
+  }
 
-     try {
-         tokenContract = new ethers.Contract(tokenContractAddress, tokenContractABI, signer);
-         return tokenContract;
-     } catch (error) {
-         console.error('Failed to connect contract:', error);
-         throw error;
-     }
- }
+  try {
+    const tokenAddress = ethVars.tokenContractAddress;
+    if (tokenAddress === null) {
+      alert("Error reading token contract address, verify the chain or .env");
+      return null;
+    }
+    ethVars.tokenContract = new ethers.Contract(
+      tokenAddress,
+      tokenContractABI,
+      ethVars.signer,
+    );
+    await refreshTokenBalance();
+    return ethVars.tokenContract;
+  } catch (error) {
+    console.error("Failed to connect contract:", error);
+    throw error;
+  }
+}
 
-export let ethVars = $state({
-    provider,
-    signer,
-    signerAddress,
-    contractAddress,
-    contract,
-    tokenContract,
-    tokenContractAddress,
-    dappsList
-});
+// Reload the full dapps list. Prefers The Graph subgraph (public, no wallet
+// needed); falls back to direct contract reads when the subgraph is
+// unreachable or not deployed yet. Shared so any component can trigger a
+// refresh (e.g. after connecting the wallet or after a successful vote).
+export async function refreshDappsList() {
+  ethVars.isLoading = true;
+  try {
+    const { dapps } = await fetchDappsFromSubgraph();
+    ethVars.dappsList = dapps;
+    ethVars.dataSource = "subgraph";
+  } catch (subgraphError) {
+    console.warn(
+      "Subgraph unavailable, falling back to contract reads:",
+      subgraphError,
+    );
+    ethVars.dataSource = "contract";
+    if (ethVars.contract === null) {
+      ethVars.dappsList = [];
+    } else {
+      try {
+        const dappsListNames = await ethVars.contract.getAllDappNames();
+        const dapps = [];
+        for (const name of dappsListNames) {
+          const info = await getDappInfoForName(name);
+          if (info) {
+            dapps.push(info);
+          }
+        }
+        ethVars.dappsList = dapps;
+      } catch (error) {
+        console.error("Failed to refresh dapps list:", error);
+      }
+    }
+  } finally {
+    ethVars.isLoading = false;
+  }
+  // ENSv2 enrichment (no bloquea el refresh): resuelve <dapp>.dapprank.eth
+  // vía UniversalResolverV2 y muta los items en su lugar.
+  attachEnsNames(ethVars.dappsList, ethVars.provider).catch((error) =>
+    console.warn("ENSv2 enrichment failed:", error),
+  );
+}
+
+/** @param {string} dappName */
+async function getDappInfoForName(dappName) {
+  if (ethVars.contract === null) return null;
+  try {
+    const info = await ethVars.contract.getDappInfo(dappName);
+    return {
+      name: dappName,
+      cid: info.cid,
+      rate: info.rate.toString(), // Convert to string for better handling
+      weight_votes_sum: info.weight_votes_sum.toString(),
+      weight_total_sum: info.weight_total_sum.toString(),
+      balance: info.balance.toString(),
+      burned: info.burned.toString(),
+      owner: info.owner,
+      status: info.status,
+    };
+  } catch (error) {
+    console.error(`Error getting info for dapp ${dappName}:`, error);
+    return null;
+  }
+}
+
+// Refresh the connected wallet's DRNK token balance and symbol.
+export async function refreshTokenBalance() {
+  if (ethVars.tokenContract === null || ethVars.signerAddress === null) {
+    ethVars.tokenBalance = null;
+    return;
+  }
+  try {
+    const balance = await ethVars.tokenContract.balanceOf(
+      ethVars.signerAddress,
+    );
+    ethVars.tokenBalance = balance;
+    try {
+      ethVars.tokenSymbol = await ethVars.tokenContract.symbol();
+    } catch (e) {
+      // symbol() is optional; keep the default if it fails
+    }
+  } catch (error) {
+    console.error("Failed to get token balance:", error);
+    ethVars.tokenBalance = null;
+  }
+}

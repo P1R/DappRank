@@ -1,64 +1,98 @@
 <script>
-  import { connectWallet, connectContract, connectTokenContract } from '../lib/ethers.svelte.js';
-  import { ethVars } from '../lib/ethers.svelte.js';
+    import {
+        connectWallet,
+        connectContract,
+        connectTokenContract,
+        refreshTokenBalance,
+        refreshDappsList,
+    } from "../lib/ethers.svelte.js";
+    import { ethVars } from "../lib/ethers.svelte.js";
+    import { t } from "../lib/i18n.svelte.js";
+    import { MorphIcon } from "morphicons/svelte";
+    import { Wallet, WalletCards, LoaderCircle } from "lucide";
 
-  async function handleConnectWallet() {
-    if (ethVars.signerAddress == null) {
-        const address = await connectWallet();
-        if (address) {
-            ethVars.signerAddress = address;
-            await handleConnectcontract();
+    async function handleConnectWallet() {
+        if (ethVars.signerAddress == null) {
+            ethVars.isLoading = true;
+            try {
+                const address = await connectWallet();
+                if (address) {
+                    ethVars.signerAddress = address;
+                    await handleConnectcontract();
+                    await refreshDappsList();
+                }
+            } finally {
+                // Always clear the loading state, even if a step fails or is rejected.
+                ethVars.isLoading = false;
+            }
+        } else {
+            // Disconnect: clear all wallet/contract state so the UI resets.
+            ethVars.signerAddress = null;
+            ethVars.contract = null;
+            ethVars.tokenContract = null;
+            ethVars.tokenContractAddress = null;
+            ethVars.dappsList = [];
+            ethVars.tokenBalance = null;
+            ethVars.isLoading = false;
         }
-    } else {
-        ethVars.signerAddress = null;
     }
-  }
 
-  async function handleConnectcontract() {
-    if (ethVars.contract == null) {
-        const contract = await connectContract();
-        if (contract) {
-            ethVars.contract = contract;
-            ethVars.tokenContractAddress = await contract.drnk();
-            //console.log("conected contract on address:", ethVars.contractAddress);
-            //console.log("token address:", ethVars.tokenContractAddress);
-            ethVars.tokenContract = await connectTokenContract();
-            //const symbol = await ethVars.tokenContract.symbol();
-            //console.log("token symbol:", symbol);
+    async function handleConnectcontract() {
+        if (ethVars.contract == null) {
+            const contract = await connectContract();
+            if (contract) {
+                ethVars.contract = contract;
+                ethVars.tokenContractAddress = await contract.drnk();
+                ethVars.tokenContract = await connectTokenContract();
+                await refreshTokenBalance();
+            }
         }
-    } else {
-        ethVars.contract = null;
     }
-  }
 </script>
 
 <div>
-  {#if ethVars.signerAddress}
-    <button class="btn" onclick={handleConnectWallet}>
-        {ethVars.signerAddress.slice(0, 6)
-        + '..' + ethVars.signerAddress.slice(-6)}
-    </button>
-  {:else}
-    <button class="btn" onclick={handleConnectWallet}>Connect Wallet</button>
-  {/if}
+    {#if ethVars.signerAddress}
+        <button
+            class="btn-neon font-mono"
+            onclick={handleConnectWallet}
+            aria-label={t("wallet.disconnect", {
+                address: `${ethVars.signerAddress.slice(0, 6)}...${ethVars.signerAddress.slice(-6)}`,
+            })}
+        >
+            <MorphIcon
+                icon={WalletCards}
+                spring="snappy"
+                reducedMotion="user"
+                aria-hidden="true"
+            />
+            {ethVars.signerAddress.slice(0, 6)}
+            + '..' + {ethVars.signerAddress.slice(-6)}
+        </button>
+    {:else}
+        <button
+            class="btn-neon"
+            onclick={handleConnectWallet}
+            disabled={ethVars.isLoading}
+            aria-busy={ethVars.isLoading}
+        >
+            {#if ethVars.isLoading}
+                <MorphIcon
+                    icon={LoaderCircle}
+                    class="animate-spin"
+                    spring="snappy"
+                    reducedMotion="user"
+                    aria-hidden="true"
+                />
+                {t("common.connecting")}
+            {:else}
+                <MorphIcon
+                    icon={Wallet}
+                    spring="snappy"
+                    reducedMotion="user"
+                    aria-hidden="true"
+                />
+                {t("common.connectWallet")}
+            {/if}
+        </button>
+    {/if}
 </div>
-
-<style>
-  .btn {
-      padding: 10px 20px;
-      background: rgba(10, 10, 26, 0.7);
-      border: 1px solid #00f7ff;
-      color: #00f7ff;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 10px rgba(0, 247, 255, 0.3);
-  }
-
-  .btn:hover {
-      background: rgba(0, 247, 255, 0.2);
-      box-shadow: 0 0 15px rgba(0, 247, 255, 0.5);
-      transform: translateY(-2px);
-  }
-</style>
