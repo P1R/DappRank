@@ -1,6 +1,6 @@
 # DappRank
 
-Status Deployet at Sepolia:
+Status: **In Progress** - Core contracts deployed on Sepolia, Uniswap v4 hook implemented and tested, production pool deployment blocked by CREATE2 factory requirement.
 
 [DappRank Website dnsLink](https://dapprank.decentralizedscience.org)
 
@@ -8,9 +8,9 @@ Status Deployet at Sepolia:
 
 IPFS CID: bafybeidzfwsyugg4yxp46t6ag7ikjz43kh6oqgkxh2h5p2qynzjey4tipu
 
-Dapps contract address is: [0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD](https://sepolia.etherscan.io/address/0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD)
+Dapps contract address: [0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD](https://sepolia.etherscan.io/address/0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD)
 
-DRNK Token contract address is: [0x9549A8CcaB9fF25Cf5061bFBC5188Baed0615B60](https://sepolia.etherscan.io/address/0x9549A8CcaB9fF25Cf5061bFBC5188Baed0615B60)
+DRNK Token contract address: [0x9549A8CcaB9fF25Cf5061bFBC5188Baed0615B60](https://sepolia.etherscan.io/address/0x9549A8CcaB9fF25Cf5061bFBC5188Baed0615B60)
 
 The DappRank DeFi model introduces a revolutionary decentralized ranking system
 for dapps using a novel voting mechanism called Square Root Weighted Voting
@@ -80,17 +80,64 @@ The test suite in `DappsManager.t.sol` provides empirical validation:
 - For 5 test users with dynamic voting amounts, the system correctly calculates:
   - `weight_votes_sum = 6,380,084,467,978`
   - `weight_total_sum = 106,138,700,962`
-  - Final rating `rate = 60` (calculated as $ 6,380,084,467,978 / 106,138,700,962 $) [3]
+  - Final rating `rate = 60` (calculated as $ 6,380,084,467,978 / 106,138,700,962 $) [2]
 
 ## Ultrasound Money Model Integration
 
 The SRWV mechanism directly supports the ultrasound money model through:
 
 1. **Deflationary Burning**: A portion of voting tokens is burned during reward distribution [2]
-2. **Supply Control**: Token supply reduction via:
+2. **Supply Control**: Token reduction via:
    - Listing fees burned during dApp registration
    - Voting rewards partially burned [2]
 3. **Dynamic Equilibrium**: The square root function ensures token utility remains balanced between governance power and scarcity [2]
+
+## Uniswap v4 Ultrasound Hook (In Progress)
+
+A Uniswap v4 hook (`DrnkUltrasoundHook`) has been implemented that burns a configurable percentage of DRNK on each LP swap, creating deflationary pressure on the liquidity pool route.
+
+### Current Status
+
+| Phase | Status | Blocker |
+|-------|--------|---------|
+| Hook implementation | Complete | - |
+| Unit tests | Complete | - |
+| Fuzz/Invariant tests | Complete | - |
+| Pool integration tests | Complete | - |
+| CREATE2 deployment | In Progress | Arachnid CREATE2 factory not on Sepolia |
+| Production pool funding | Pending | Requires CREATE2 factory deployment |
+
+### Key Hook Features
+
+- Burns configurable % of DRNK output on swaps (default 2%, range 0.5%-100%)
+- Admin controls: pause, burn fee adjustment, ownership transfer
+- Pool verification: checks pool manager, DRNK currency, owner
+- Events: `DrnkBurned`, `BurnFeeUpdated`, `HookPaused`, `HookUnpaused`, `OwnershipTransferred`
+
+### Liquidity Pool Strategy
+
+- Initial LP target: 0.3 ETH + ~315.79 DRNK
+- Target price: 5% discount vs `buyDRNK()` route
+- `buyDRNK()` reference price: 0.001 ETH/DRNK
+- LP target price: 0.00095 ETH/DRNK
+
+### Test Results
+
+- 52/52 local tests pass (unit, fuzz, invariant, pool integration)
+- Fork tests require `--fork-url` flag
+- Full pool initialization works on Anvil with mined CREATE2 salt
+
+### Remaining Work
+
+1. Deploy CREATE2 factory on Sepolia
+2. Mine salt for hook with correct permission bits
+3. Deploy hook via CREATE2
+4. Initialize pool and seed liquidity
+5. Monitor and tune parameters
+6. Final documentation
+
+Full plan: [`docs/UNISWAP_ULTRASOUND_HOOK_PLAN.md`](./docs/UNISWAP_ULTRASOUND_HOOK_PLAN.md)
+Tokenomics research: [`docs/UNISWAP_ULTRASOUND_TOKENOMICS.md`](./docs/UNISWAP_ULTRASOUND_TOKENOMICS.md)
 
 ## Security and Governance Implications
 
@@ -190,41 +237,3 @@ $ forge script script/DemoTest.s.sol:DemoTestScript  --rpc-url $PROVIDER_URL --p
 2. [DappsManager](./src-sc/DappsManager.sol)
 3. [Demo test](./test/DappsManager.t.sol)
 4. https://ethereum.stackexchange.com/questions/87451/solidity-error-struct-containing-a-nested-mapping-cannot-be-constructed
-
-## The Graph Integration (ETHOnline 2026)
-
-DappRank usa [The Graph](https://thegraph.com) como columna vertebral de datos:
-un subgraph indexa los eventos de `DappsManager.sol` en Sepolia y alimenta tanto
-el ranking del frontend como un agente IA (Subgraph MCP) para análisis en
-lenguaje natural.
-
-### Estado
-
-- [x] Eventos integrados y desplegados en `DappsManager.sol` (2026-09-13)
-- [x] Proyecto subgraph en [`subgraph/`](./subgraph/README.md)
-- [x] Frontend preparado para leer del subgraph con fallback al contrato (`src/lib/subgraph.svelte.js`)
-- [x] Contrato redeployado en Sepolia con eventos (`0x6b0EB389DD4B3ad4E9a28f56f971735aD2A85baD`)
-- [ ] Desplegar subgraph a Subgraph Studio
-- [ ] Configurar Subgraph MCP para el agente IA
-
-### Contrato
-
-`DappsManager.sol` emite los eventos `DappRegistered`, `DappApproved`,
-`DappBanned`, `VoteCast`, `TokensBurned`, `DappCashOut`, `DappRemoved` y
-`DappCIDUpdated`. `VoteCast` incluye `amount` para que el subgraph calcule el
-delta de balance. `dappCashOut()` descuenta `dapp.balance` (contabilidad en
-sync). También se corrigió la emisión inflacionaria de DRNK (el `multiplier`
-de los fans se inicializa en `1`, ver [`FIX_MULTIPLIER.md`](./FIX_MULTIPLIER.md)).
-
-### Subgraph
-
-Ver [`subgraph/README.md`](./subgraph/README.md) para el despliegue. El
-frontend consulta el endpoint vía `VITE_SUBGRAPH_URL` (ver `envexample`); si no
-está disponible, cae a lecturas directas del contrato.
-
-### Agente IA
-
-El [Subgraph MCP](https://thegraph.com/docs/en/subgraphs/tooling/subgraph-mcp/introduction/)
-permite consultar el subgraph en lenguaje natural: rankings, tendencias de
-quema, presión deflacionaria, etc. Configurar con el endpoint del subgraph
-desplegado.
