@@ -1,15 +1,18 @@
 @import "tailwindcss";
 
+/* Sober emerald/teal palette inspired by ultrasound.money — the default look.
+   Token names stay "neon-*" for compatibility with existing components, but the
+   values are muted: teal primary, soft rose accent, no hot cyan/magenta. */
 @theme {
-    --color-void: #0a0a16;
-    --color-deep: #1a0a2a;
-    --color-ink: #e0e0ff;
+    --color-void: #0a0f0d;
+    --color-deep: #111a17;
+    --color-ink: #e6f0ec;
 
-    --color-neon-cyan: #00f7ff;
-    --color-neon-pink: #ff00cc;
-    --color-neon-green: #39ff14;
-    --color-neon-amber: #ffe600;
-    --color-neon-red: #ff3355;
+    --color-neon-cyan: #2dd4bf;
+    --color-neon-pink: #f472b6;
+    --color-neon-green: #4ade80;
+    --color-neon-amber: #fbbf24;
+    --color-neon-red: #f87171;
 
     --color-trust-high: var(--color-neon-green);
     --color-trust-mid: var(--color-neon-amber);
@@ -21,14 +24,14 @@
 
 /* Theme palettes — applied via <html data-theme="..."> (see src/lib/theme.svelte.js).
    :root[data-theme] beats the :root defaults emitted by @theme, so these override
-   the neon palette. Light values are darkened to keep WCAG AA contrast on the
-   light background; Dark uses an emerald/teal primary inspired by ultrasound.money. */
+   the default palette. Light values are darkened to keep WCAG AA contrast on the
+   light background; Dark is a deeper, higher-contrast variant of the default. */
 :root[data-theme="light"] {
-    --color-void: #f6f7fb;
-    --color-deep: #eef0f6;
-    --color-ink: #1a1f36;
+    --color-void: #f7faf8;
+    --color-deep: #eef2ef;
+    --color-ink: #1c2b28;
 
-    --color-neon-cyan: #0e7490;
+    --color-neon-cyan: #0f766e;
     --color-neon-pink: #be185d;
     --color-neon-green: #15803d;
     --color-neon-amber: #b45309;
@@ -36,14 +39,14 @@
 }
 
 :root[data-theme="dark"] {
-    --color-void: #0a0f0d;
-    --color-deep: #111a17;
-    --color-ink: #e6f0ec;
+    --color-void: #050807;
+    --color-deep: #0b100e;
+    --color-ink: #ecf5f1;
 
-    --color-neon-cyan: #2dd4bf;
-    --color-neon-pink: #f472b6;
-    --color-neon-green: #4ade80;
-    --color-neon-amber: #fbbf24;
+    --color-neon-cyan: #34d399;
+    --color-neon-pink: #fb7185;
+    --color-neon-green: #6ee7b7;
+    --color-neon-amber: #fcd34d;
     --color-neon-red: #f87171;
 }
 

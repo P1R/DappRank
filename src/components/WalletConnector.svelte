@@ -7,6 +7,7 @@
         refreshDappsList,
     } from "../lib/ethers.svelte.js";
     import { ethVars } from "../lib/ethers.svelte.js";
+    import { t } from "../lib/i18n.svelte.js";
     import { MorphIcon } from "morphicons/svelte";
     import { Wallet, WalletCards, LoaderCircle } from "lucide";
 
@@ -54,7 +55,9 @@
         <button
             class="btn-neon font-mono"
             onclick={handleConnectWallet}
-            aria-label={`Disconnect wallet ${ethVars.signerAddress.slice(0, 6)}...${ethVars.signerAddress.slice(-6)}`}
+            aria-label={t("wallet.disconnect", {
+                address: `${ethVars.signerAddress.slice(0, 6)}...${ethVars.signerAddress.slice(-6)}`,
+            })}
         >
             <MorphIcon
                 icon={WalletCards}
@@ -80,7 +83,7 @@
                     reducedMotion="user"
                     aria-hidden="true"
                 />
-                Connecting…
+                {t("common.connecting")}
             {:else}
                 <MorphIcon
                     icon={Wallet}
@@ -88,7 +91,7 @@
                     reducedMotion="user"
                     aria-hidden="true"
                 />
-                Connect Wallet
+                {t("common.connectWallet")}
             {/if}
         </button>
     {/if}

@@ -1,6 +1,7 @@
 <script>
     import { ethVars } from "../lib/ethers.svelte.js";
     import { openVoteModal } from "../lib/modal.svelte.js";
+    import { t } from "../lib/i18n.svelte.js";
     import { toUtf8String, formatUnits } from "ethers";
     import { MorphIcon } from "morphicons/svelte";
     import { Trophy, Flame, CircleCheck, Vote } from "lucide";
@@ -16,12 +17,12 @@
     };
 
     /** @type {Record<Tier, string>} */
-    const TIER_LABEL = {
-        high: "Trusted",
-        mid: "Mixed",
-        low: "Risky",
-        neutral: "Neutral",
-    };
+    let TIER_LABEL = $derived({
+        high: t("rank.tierHigh"),
+        mid: t("rank.tierMid"),
+        low: t("rank.tierLow"),
+        neutral: t("rank.tierNeutral"),
+    });
     /** @type {Record<Tier, string>} */
     const TIER_TEXT_CLASS = {
         high: "text-trust-high",
@@ -62,11 +63,11 @@
             const rating = parseInt(dapp.rate) || 0;
             const status = dapp.status
                 ? stripNulls(toUtf8String(dapp.status))
-                : "Unknown";
+                : t("rank.statusUnknown");
             return {
                 name: dapp.name
                     ? stripNulls(toUtf8String(dapp.name))
-                    : "Unknown DApp",
+                    : t("rank.unknownDapp"),
                 rawName: dapp.name,
                 ensName: dapp.ensName || null,
                 ensResolved: dapp.ensResolved || false,
@@ -76,6 +77,9 @@
                 tokensDonated: Number(formatUnits(dapp.balance ?? 0, 18)) || 0,
                 tokensBurned: Number(formatUnits(dapp.burned ?? 0, 18)) || 0,
                 owner: dapp.owner,
+                ownerShort: dapp.owner
+                    ? `${dapp.owner.slice(0, 6)}...${dapp.owner.slice(-4)}`
+                    : "—",
                 status,
                 statusTier: STATUS_TIER[status] || "neutral",
                 weightTotalSum: Number(dapp.weight_total_sum) || 0,
@@ -113,9 +117,9 @@
         <div
             class="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-neon-cyan/30 border-t-neon-cyan"
         ></div>
-        <p class="text-lg font-semibold text-neon-cyan">Loading ranking…</p>
+        <p class="text-lg font-semibold text-neon-cyan">{t("rank.loading")}</p>
         <p class="mt-1 text-sm opacity-80">
-            Fetching the latest data from the contract.
+            {t("rank.loadingSub")}
         </p>
     </div>
 {:else if data.length > 0}
@@ -124,7 +128,7 @@
             class="mx-auto flex w-fit max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-neon-pink/30 bg-neon-pink/10 px-5 py-2 text-sm font-semibold text-neon-pink"
         >
             <span aria-hidden="true">🔥</span>
-            <span>Total DRNK Burned:</span>
+            <span>{t("rank.totalBurned")}</span>
             <span class="text-base font-bold tabular-nums"
                 >{totalBurned.toLocaleString(undefined, {
                     maximumFractionDigits: 2,
@@ -168,17 +172,18 @@
                 {#if item.ensResolved}
                     <span
                         class="mt-1 inline-flex items-center gap-1 rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-neon-cyan"
-                        title="Resolved via ENSv2 (Sepolia)">ENSv2</span
+                        title={t("rank.ensv2")}>ENSv2</span
                     >
                 {/if}
                 <a
                     href={item.url}
                     class="block break-all text-xs opacity-60"
-                    aria-label={`Open ${item.name} on IPFS`}>{item.url}</a
+                    aria-label={t("rank.openOnIpfs", { name: item.name })}
+                    >{item.url}</a
                 >
 
                 <div class="mt-3 flex items-center justify-between">
-                    <span class="text-sm opacity-70">Rating</span>
+                    <span class="text-sm opacity-70">{t("rank.rating")}</span>
                     <span class="flex items-center gap-2">
                         <span
                             class="tabular-nums font-semibold {TIER_TEXT_CLASS[
@@ -212,7 +217,9 @@
                         >
                             {item.tokensDonated}
                         </div>
-                        <div class="text-xs opacity-60">Donated</div>
+                        <div class="text-xs opacity-60">
+                            {t("rank.donated")}
+                        </div>
                     </div>
                     <div
                         class="flex flex-col items-center rounded-md border border-neon-cyan/20 bg-black/20 px-3 py-2"
@@ -227,14 +234,14 @@
                             />
                             {item.tokensBurned}
                         </div>
-                        <div class="text-xs opacity-60">Burned</div>
+                        <div class="text-xs opacity-60">{t("rank.burned")}</div>
                     </div>
                 </div>
 
                 <div
                     class="mt-3 flex items-center justify-between text-xs opacity-70"
                 >
-                    <span>Community backing</span>
+                    <span>{t("rank.backing")}</span>
                     <span class="tabular-nums font-semibold text-neon-cyan"
                         >{item.consensusPct}%</span
                     >
@@ -249,7 +256,7 @@
                 </div>
 
                 <div class="mt-3 text-xs opacity-60">
-                    Owner: {item.owner.slice(0, 6)}...{item.owner.slice(-4)}
+                    {t("rank.owner", { owner: item.ownerShort })}
                 </div>
 
                 <button
@@ -257,7 +264,7 @@
                     onclick={() => openVoteModal(item.rawName)}
                 >
                     <MorphIcon icon={Vote} class="h-4 w-4" aria-hidden="true" />
-                    Vote
+                    {t("rank.vote")}
                 </button>
             </article>
         {/each}
@@ -266,27 +273,35 @@
     <!-- DESKTOP: table (same columns, no reflow) -->
     <div class="mx-auto max-w-350 table-scroll py-4 hidden md:block">
         <table class="w-full border-collapse text-left">
-            <caption class="sr-only"
-                >Ranking de dApps por rating de la comunidad</caption
-            >
+            <caption class="sr-only">{t("rank.caption")}</caption>
             <thead>
                 <tr
                     class="border-b border-neon-cyan/25 text-xs uppercase tracking-wide text-neon-cyan/70"
                 >
-                    <th scope="col" class="px-3 py-3 font-semibold">Rank</th>
-                    <th scope="col" class="px-3 py-3 font-semibold">Dapp</th>
-                    <th scope="col" class="px-3 py-3 font-semibold">Rating</th>
-                    <th scope="col" class="px-3 py-3 text-right font-semibold"
-                        >Donated</th
+                    <th scope="col" class="px-3 py-3 font-semibold"
+                        >{t("rank.colRank")}</th
+                    >
+                    <th scope="col" class="px-3 py-3 font-semibold"
+                        >{t("rank.colDapp")}</th
+                    >
+                    <th scope="col" class="px-3 py-3 font-semibold"
+                        >{t("rank.colRating")}</th
                     >
                     <th scope="col" class="px-3 py-3 text-right font-semibold"
-                        >Burned</th
+                        >{t("rank.colDonated")}</th
                     >
                     <th scope="col" class="px-3 py-3 text-right font-semibold"
-                        >Backing</th
+                        >{t("rank.colBurned")}</th
                     >
-                    <th scope="col" class="px-3 py-3 font-semibold">Status</th>
-                    <th scope="col" class="px-3 py-3 font-semibold">Vote</th>
+                    <th scope="col" class="px-3 py-3 text-right font-semibold"
+                        >{t("rank.colBacking")}</th
+                    >
+                    <th scope="col" class="px-3 py-3 font-semibold"
+                        >{t("rank.colStatus")}</th
+                    >
+                    <th scope="col" class="px-3 py-3 font-semibold"
+                        >{t("rank.colVote")}</th
+                    >
                 </tr>
             </thead>
             <tbody>
@@ -317,8 +332,7 @@
                                 {#if item.ensResolved}
                                     <span
                                         class="ml-1.5 inline-flex items-center gap-1 rounded-full border border-neon-cyan/30 bg-neon-cyan/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-neon-cyan"
-                                        title="Resolved via ENSv2 (Sepolia)"
-                                        >ENSv2</span
+                                        title={t("rank.ensv2")}>ENSv2</span
                                     >
                                 {/if}
                             </div>
@@ -326,8 +340,9 @@
                                 <a
                                     href={item.url}
                                     class="hover:opacity-100"
-                                    aria-label={`Open ${item.name} on IPFS`}
-                                    >{item.url}</a
+                                    aria-label={t("rank.openOnIpfs", {
+                                        name: item.name,
+                                    })}>{item.url}</a
                                 >
                             </div>
                         </td>
@@ -383,7 +398,7 @@
                                 class="btn-neon px-3 py-1.5 text-xs"
                                 onclick={() => openVoteModal(item.rawName)}
                             >
-                                Vote
+                                {t("rank.vote")}
                             </button>
                         </td>
                     </tr>
@@ -396,11 +411,10 @@
         class="mx-auto my-12 max-w-md rounded-xl border border-neon-cyan/20 bg-void/60 p-8 text-center shadow-md"
     >
         <p class="mb-2 text-lg font-semibold text-neon-cyan">
-            No dApps loaded yet
+            {t("rank.empty")}
         </p>
         <p class="text-sm opacity-80">
-            Connect your wallet and click “Refresh” to load the current ranking
-            from the contract.
+            {t("rank.emptySub")}
         </p>
     </div>
 {/if}

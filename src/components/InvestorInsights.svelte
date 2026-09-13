@@ -2,6 +2,7 @@
     import { onMount } from "svelte";
     import { querySubgraph } from "../lib/subgraph.svelte.js";
     import { formatUnits } from "ethers";
+    import { t } from "../lib/i18n.svelte.js";
     import { MorphIcon } from "morphicons/svelte";
     import { Boxes, Vote, Flame, Wallet, Database, LoaderCircle } from "lucide";
 
@@ -69,14 +70,14 @@
             class="h-4 w-4 animate-spin"
             aria-hidden="true"
         />
-        Loading on-chain insights…
+        {t("insights.loading")}
     </div>
 {:else if error}
     <div
         class="mx-auto mt-6 max-w-350 rounded-xl border border-neon-pink/30 bg-neon-pink/5 px-4 py-3 text-sm text-neon-pink/80"
         role="status"
     >
-        Insights no disponibles: {error}
+        {t("insights.error", { error })}
     </div>
 {:else if stats}
     <section class="mx-auto mt-6 max-w-350" aria-label="Investor insights">
@@ -88,7 +89,7 @@
                         class="h-3.5 w-3.5"
                         aria-hidden="true"
                     />
-                    Dapps
+                    {t("insights.dapps")}
                 </div>
                 <div class="mt-1 text-xl font-bold tabular-nums text-neon-cyan">
                     {stats.totalDapps}
@@ -101,7 +102,7 @@
                         class="h-3.5 w-3.5"
                         aria-hidden="true"
                     />
-                    Votes
+                    {t("insights.votes")}
                 </div>
                 <div class="mt-1 text-xl font-bold tabular-nums text-neon-cyan">
                     {fmt(stats.totalVotes)}
@@ -114,7 +115,7 @@
                         class="h-3.5 w-3.5"
                         aria-hidden="true"
                     />
-                    DRNK burned
+                    {t("insights.burned")}
                 </div>
                 <div class="mt-1 text-xl font-bold tabular-nums text-neon-pink">
                     {fmt(stats.totalBurned)}
@@ -127,7 +128,7 @@
                         class="h-3.5 w-3.5"
                         aria-hidden="true"
                     />
-                    DRNK held
+                    {t("insights.held")}
                 </div>
                 <div class="mt-1 text-xl font-bold tabular-nums text-neon-cyan">
                     {fmt(stats.totalBalance)}
@@ -138,7 +139,7 @@
         {#if topBurned.length > 0}
             <div class="card mt-3 p-4 text-left">
                 <h2 class="text-sm font-semibold text-neon-cyan">
-                    Top deflationary dapps
+                    {t("insights.topBurned")}
                 </h2>
                 <ul class="mt-2 divide-y divide-neon-cyan/10">
                     {#each topBurned as d (d.id)}
@@ -161,7 +162,7 @@
             class="mt-3 flex items-center justify-center gap-1.5 text-xs opacity-50"
         >
             <MorphIcon icon={Database} class="h-3.5 w-3.5" aria-hidden="true" />
-            Indexed live by The Graph
+            {t("insights.indexedBy")}
         </p>
     </section>
 {/if}

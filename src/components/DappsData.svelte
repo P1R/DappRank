@@ -1,6 +1,7 @@
 <script>
     import { refreshDappsList } from "../lib/ethers.svelte.js";
     import { ethVars } from "../lib/ethers.svelte.js";
+    import { t } from "../lib/i18n.svelte.js";
     import { MorphIcon } from "morphicons/svelte";
     import { RefreshCw, LoaderCircle } from "lucide";
 </script>
@@ -10,7 +11,7 @@
         class="btn-neon"
         onclick={refreshDappsList}
         disabled={ethVars.isLoading}
-        aria-label="Refresh ranking"
+        aria-label={t("action.refreshRanking")}
         aria-busy={ethVars.isLoading}
     >
         <MorphIcon
@@ -20,6 +21,6 @@
             reducedMotion="user"
             aria-hidden="true"
         />
-        {ethVars.isLoading ? "Refreshing…" : "Refresh"}
+        {ethVars.isLoading ? t("action.refreshing") : t("action.refresh")}
     </button>
 </div>
