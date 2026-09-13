@@ -4,9 +4,10 @@ cache/
 out/
 
 ## Ignores development broadcast logs
-!/broadcast
-/broadcast/*/31337/
-/broadcast/**/dry-run/
+# Los receipts de transacciones (broadcast/) no se suben a IPFS ni se
+# commitean: son logs regenerables. Las direcciones desplegadas están
+# documentadas en README.md y AI_USAGE.md.
+/broadcast/
 
 ## Dotenv file
 .env

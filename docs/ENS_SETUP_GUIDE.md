@@ -41,9 +41,9 @@ contrato de prueba de ENSv2 acepta un USDC libremente minteable. Míntate el
 que quieras (6 decimales, como el USDC real):
 
 ```bash
-# MockUSDC en Sepolia: 0xd3322b29a7bdee707d1684676f149bf41aa3422f
+# MockUSDC en Sepolia: 0x768f42455a2d082e23ceef7d51e5787c82d67a39
 # 1000 USDC = 1000 * 10^6 = 1000000000
-cast send 0xd3322b29a7bdee707d1684676f149bf41aa3422f \
+cast send 0x768f42455a2d082e23ceef7d51e5787c82d67a39 \
   "mint(address,uint256)" $TU_DIRECCION 1000000000 \
   --rpc-url $SEPOLIA_RPC_URL --private-key $PRIVATE_KEY
 ```
@@ -224,14 +224,13 @@ ens subname create search.dapprank.eth --chain sepolia
 | `CallerNotAdmin` / revert de permisos en `setSubregistry` | La cuenta que firma no es el owner del dominio           | Usa `PRIVATE_KEY` de la cuenta que registró el dominio                                                                                 |
 | `LabelAlreadyRegistered`                                  | El subname ya existe (script corrido antes)              | Es idempotente por diseño parcial: los subnames ya creados fallan; usa labels nuevos o borra los existentes                            |
 | La UI muestra hex en vez del nombre ENS                   | Subname no registrado o RPC público caído                | Verifica con el paso 3.2; el frontend cae a `bytes32` como fallback                                                                    |
-| Sin USDC para registrar                                   | No tienes USDC de prueba                                 | Mint directo del MockUSDC (`0xd3322b29a7bdee707d1684676f149bf41aa3422f`, función `mint`) o faucet de Circle: https://faucet.circle.com |
+| Sin USDC para registrar                                   | No tienes USDC de prueba                                 | Mint directo del MockUSDC (`0x768f42455a2d082e23ceef7d51e5787c82d67a39`, función `mint`) o faucet de Circle: https://faucet.circle.com |
 
 ---
 
 ## 6. Referencias
 
-- Direcciones canónicas ENSv2 Sepolia: `contracts/docs/addresses/sepolia.md` en
-  [ensdomains/contracts-v2](https://github.com/ensdomains/contracts-v2)
+- Direcciones canónicas ENSv2 Sepolia: https://docs.ens.domains/learn/deployments/ (deployment 2026-07-30; el doc `contracts-v2/docs/addresses/sepolia.md` está desactualizado)
 - Docs ENSv2: https://docs.ens.domains/ensv2/overview
 - Página del premio ENS (ETHOnline 2026): https://ethglobal.com/events/ethonline2026/prizes/ens
 - Código de la integración: `src/lib/ens.svelte.js`, `script/EnsSetup.s.sol`,
